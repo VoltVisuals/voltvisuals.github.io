@@ -4044,6 +4044,23 @@ body.menu-open { overflow: hidden; }
   cursor: pointer;
   transition: filter 0.2s, transform 0.15s;
   box-shadow: 0 4px 16px rgba(59, 158, 255, 0.25);
+  text-decoration: none;
+}
+
+.shop-pay-note {
+  margin-top: 28px;
+  text-align: center;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.shop-pay-note a {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .product-card-btn:hover {

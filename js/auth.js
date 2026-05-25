@@ -4,9 +4,9 @@ const Auth = {
   _supabase: null,
 
   PLANS: {
-    '30d': { days: 30, price: 99, label: '30 дней', desc: 'Месяц доступа ко всем модулям' },
-    '6m': { days: 180, price: 139, label: '6 месяцев', desc: 'Полгода — выгоднее на 77%' },
-    lifetime: { days: null, price: 299, label: 'Навсегда', desc: 'Разовая покупка без ограничений' },
+    '30d': { days: 30, price: 99, label: '30 дней', desc: 'Месяц доступа ко всем модулям', funpayUrl: 'https://funpay.com/lots/offer?id=69706646' },
+    '6m': { days: 180, price: 139, label: '6 месяцев', desc: 'Полгода — выгоднее на 77%', funpayUrl: 'https://funpay.com/lots/offer?id=69706845' },
+    lifetime: { days: null, price: 299, label: 'Навсегда', desc: 'Разовая покупка без ограничений', funpayUrl: 'https://funpay.com/lots/offer?id=69706914' },
   },
 
   DURATIONS: {

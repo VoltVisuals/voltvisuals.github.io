@@ -10,9 +10,12 @@ const root = path.join(__dirname, '..', '..');
 function loadEnv(file) {
   if (!fs.existsSync(file)) return {};
   const env = {};
-  for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
-    const m = line.match(/^\s*([^#=]+)=(.*)$/);
-    if (m) env[m[1].trim()] = m[2].trim();
+  for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eq = trimmed.indexOf('=');
+    if (eq <= 0) continue;
+    env[trimmed.slice(0, eq).trim()] = trimmed.slice(eq + 1).trim();
   }
   return env;
 }
@@ -30,6 +33,19 @@ const secret = env.SUPABASE_SECRET_KEY;
 const url = env.SUPABASE_URL || 'https://njgdqgrugpvaptfzejdv.supabase.co';
 const jarName = env.MOD_JAR_NAME || 'voltvisuals-1.6.1.jar';
 
+function storageHeaders(contentType = 'application/octet-stream') {
+  const h = {
+    apikey: secret,
+    'Content-Type': contentType,
+    'User-Agent': 'VoltVisuals-Setup/1.0',
+  };
+  // sb_secret_* keys: only apikey header (Bearer breaks Storage API)
+  if (!secret?.startsWith('sb_secret_')) {
+    h.Authorization = `Bearer ${secret}`;
+  }
+  return h;
+}
+
 const candidates = [
   path.join(root, 'VoltVisuals', 'build', 'libs', jarName),
   path.join(siteRoot, 'server', 'files', jarName),
@@ -43,17 +59,9 @@ if (!jarPath) {
   process.exit(1);
 }
 
-const headers = {
-  apikey: secret,
-  Authorization: `Bearer ${secret}`,
-  'Content-Type': 'application/octet-stream',
-  'x-upsert': 'true',
-  'User-Agent': 'VoltVisuals-Setup/1.0',
-};
-
 const bucketRes = await fetch(`${url}/storage/v1/bucket`, {
   method: 'POST',
-  headers: { ...headers, 'Content-Type': 'application/json' },
+  headers: storageHeaders('application/json'),
   body: JSON.stringify({ id: 'mod-releases', name: 'mod-releases', public: false }),
 });
 if (!bucketRes.ok && bucketRes.status !== 409) {
@@ -63,7 +71,7 @@ if (!bucketRes.ok && bucketRes.status !== 409) {
 const body = fs.readFileSync(jarPath);
 const upload = await fetch(`${url}/storage/v1/object/mod-releases/${jarName}`, {
   method: 'POST',
-  headers,
+  headers: { ...storageHeaders(), 'x-upsert': 'true' },
   body,
 });
 
