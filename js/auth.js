@@ -422,6 +422,7 @@ const Auth = {
     if (!menu || menu.dataset.vvEnhanced) return;
     menu.dataset.vvEnhanced = '1';
 
+    try {
     const guest = document.getElementById('mobileGuest');
     const loginHref = guest?.querySelector('a[href*="login"]')?.getAttribute('href') || 'login.html';
     const regHref = guest?.querySelector('a[href*="register"]')?.getAttribute('href') || 'register.html';
@@ -451,7 +452,7 @@ const Auth = {
         <button type="button" class="mobile-logout-btn" id="mobileLogoutBtn">Выйти из аккаунта</button>`;
     }
 
-    const navLinks = [...menu.querySelectorAll(':scope > a[href]')];
+    const navLinks = [...menu.children].filter(el => el.matches('a[href]'));
     if (navLinks.length) {
       const section = document.createElement('div');
       section.className = 'mobile-menu-section mobile-menu-section--links';
@@ -472,7 +473,11 @@ const Auth = {
       backdrop.id = 'mobileMenuBackdrop';
       backdrop.className = 'mobile-menu-backdrop';
       backdrop.setAttribute('aria-hidden', 'true');
-      menu.parentElement.insertBefore(backdrop, menu);
+    }
+    document.body.appendChild(backdrop);
+    document.body.appendChild(menu);
+    } catch (err) {
+      console.warn('Mobile menu enhance failed:', err);
     }
   },
 
@@ -501,10 +506,18 @@ const Auth = {
     });
 
     const burger = document.getElementById('navBurger');
-    burger?.addEventListener('click', () => {
+    const toggleMenu = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       const menu = document.getElementById('mobileMenu');
       this.setMobileMenuOpen(!menu?.classList.contains('open'));
-    });
+    };
+    if (burger) {
+      burger.type = 'button';
+      burger.addEventListener('click', toggleMenu);
+    }
 
     document.getElementById('mobileMenuBackdrop')?.addEventListener('click', () => this.setMobileMenuOpen(false));
 
