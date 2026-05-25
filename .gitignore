@@ -12,4 +12,5 @@ server/data/
 server/data/*.db
 server/data/*.db-*
 server/data/.volt_secret
-server/files/*.jar
+supabase/secrets.local.env
+js/supabase-config.local.js

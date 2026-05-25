@@ -42,6 +42,7 @@
           <label for="password">Пароль</label>
           <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
         </div>
+        <p class="auth-hint hidden" id="loginServerHint"></p>
         <p class="form-error hidden" id="loginError"></p>
         <button type="submit" class="btn btn--primary btn--lg btn--full">Войти</button>
       </form>
@@ -53,11 +54,19 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
   <script src="js/cookies.js"></script>
   <script src="js/auth.js"></script>
   <script>
     CookieConsent.init();
     (async () => {
+      const hint = document.getElementById('loginServerHint');
+      if (hint && !Auth.isConfigured()) {
+        hint.textContent = 'Supabase не настроен. Проверьте js/supabase-config.js';
+        hint.classList.remove('hidden');
+      }
+
       await Auth.init();
       if (Auth.getCurrentUser()) {
         window.location.href = Auth.loginRedirect(Auth.getCurrentUser());
@@ -67,18 +76,26 @@
         e.preventDefault();
         const err = document.getElementById('loginError');
         const btn = e.target.querySelector('button[type="submit"]');
+        err.classList.add('hidden');
+        err.textContent = '';
         btn.disabled = true;
-        const result = await Auth.login({
-          login: document.getElementById('login').value,
-          password: document.getElementById('password').value,
-        });
-        btn.disabled = false;
-        if (!result.ok) {
-          err.textContent = result.error;
+        try {
+          const result = await Auth.login({
+            login: document.getElementById('login').value,
+            password: document.getElementById('password').value,
+          });
+          if (!result.ok) {
+            err.textContent = result.error;
+            err.classList.remove('hidden');
+            return;
+          }
+          window.location.href = Auth.loginRedirect(result.user);
+        } catch (ex) {
+          err.textContent = 'Ошибка входа. Проверьте supabase-config.js и Edge Function.';
           err.classList.remove('hidden');
-          return;
+        } finally {
+          btn.disabled = false;
         }
-        window.location.href = Auth.loginRedirect(result.user);
       });
     })();
   </script>

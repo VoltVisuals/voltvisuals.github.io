@@ -2,55 +2,36 @@ const Admin = {
   users: [],
   editingId: null,
   searchTimer: null,
-  durations: [],
-
-  api(path, options = {}) {
-    return fetch('/api' + path, {
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-      ...options,
-    });
-  },
+  durations: Auth.ADMIN_DURATIONS,
 
   formatDate(iso) {
     if (!iso) return '—';
     return new Date(iso).toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
     });
   },
 
   subBadge(user) {
     if (user.banned) return '<span class="admin-tag admin-tag--red">Бан</span>';
     if (!user.subscriptionExpires) return '<span class="admin-tag">Нет</span>';
-    if (user.subscriptionExpires === 'lifetime') {
-      return '<span class="admin-tag admin-tag--green">Lifetime</span>';
-    }
+    if (user.subscriptionExpires === 'lifetime') return '<span class="admin-tag admin-tag--green">Lifetime</span>';
     const active = new Date(user.subscriptionExpires) > new Date();
     return active
       ? '<span class="admin-tag admin-tag--green">Активна</span>'
       : '<span class="admin-tag admin-tag--red">Истекла</span>';
   },
 
-  async loadDurations() {
-    const res = await this.api('/admin/durations');
-    const data = await res.json();
-    if (!data.ok) return;
-    this.durations = data.durations;
+  loadDurations() {
     const select = document.getElementById('keyPlanSelect');
     if (select) {
-      select.innerHTML = data.durations
+      select.innerHTML = this.durations
         .map(d => `<option value="${d.id}">${this.escape(d.label)}</option>`)
         .join('');
     }
   },
 
   async loadStats() {
-    const res = await this.api('/admin/stats');
-    const data = await res.json();
+    const data = await Auth.rpc('admin_stats');
     if (!data.ok) return;
     document.getElementById('statTotal').textContent = data.stats.total;
     document.getElementById('statActive').textContent = data.stats.active;
@@ -58,11 +39,10 @@ const Admin = {
   },
 
   async loadKeys() {
-    const res = await this.api('/admin/keys');
-    const data = await res.json();
+    const data = await Auth.rpc('admin_list_keys');
     if (!data.ok) return;
     const tbody = document.getElementById('keysTableBody');
-    if (!data.keys.length) {
+    if (!data.keys?.length) {
       tbody.innerHTML = '<tr><td colspan="5" class="admin-empty">Ключей пока нет</td></tr>';
       return;
     }
@@ -70,7 +50,7 @@ const Admin = {
       const status = k.status === 'used'
         ? '<span class="admin-tag admin-tag--red">Использован</span>'
         : '<span class="admin-tag admin-tag--green">Активен</span>';
-      const label = k.label || Auth.planLabel(k.planId);
+      const label = Auth.planLabel(k.planId);
       return `<tr>
         <td>${this.escape(label)}</td>
         <td>${this.formatDate(k.createdAt)}</td>
@@ -83,11 +63,7 @@ const Admin = {
 
   async generateKey() {
     const planId = document.getElementById('keyPlanSelect').value;
-    const res = await this.api('/admin/keys/generate', {
-      method: 'POST',
-      body: JSON.stringify({ planId, count: 1 }),
-    });
-    const data = await res.json();
+    const data = await Auth.rpc('admin_generate_key', { p_plan_id: planId });
     if (!data.ok || !data.keys?.length) {
       Auth.showToast(data.error || 'Ошибка генерации', 'error');
       return;
@@ -96,19 +72,17 @@ const Admin = {
     document.getElementById('generatedKey').textContent = key.code;
     document.getElementById('keyResultLabel').textContent = key.label || Auth.planLabel(key.planId);
     document.getElementById('keyResult').classList.remove('hidden');
-    Auth.showToast('Ключ сгенерирован — скопируйте и передайте покупателю');
+    Auth.showToast('Ключ сгенерирован');
     await this.loadKeys();
   },
 
   async loadUsers(q = '') {
-    const url = q ? `/admin/users?q=${encodeURIComponent(q)}` : '/admin/users';
-    const res = await this.api(url);
-    const data = await res.json();
+    const data = await Auth.rpc('admin_list_users', { p_q: q });
     if (!data.ok) {
       Auth.showToast(data.error || 'Ошибка загрузки', 'error');
       return;
     }
-    this.users = data.users;
+    this.users = data.users || [];
     this.renderTable();
   },
 
@@ -119,31 +93,24 @@ const Admin = {
       return;
     }
 
-    tbody.innerHTML = this.users
-      .map(u => {
-        const hwid = u.hwid
-          ? `<span class="admin-mono" title="${u.hwid}">${u.hwid.slice(0, 12)}…</span>`
-          : '<span class="admin-muted">—</span>';
-        const plan = u.subscriptionPlan ? Auth.planLabel(u.subscriptionPlan) : '—';
-        const expires =
-          u.subscriptionExpires === 'lifetime'
-            ? 'Навсегда'
-            : u.subscriptionExpires
-              ? this.formatDate(u.subscriptionExpires)
-              : '—';
+    tbody.innerHTML = this.users.map(u => {
+      const hwid = u.hwid
+        ? `<span class="admin-mono" title="${u.hwid}">${u.hwid.slice(0, 12)}…</span>`
+        : '<span class="admin-muted">—</span>';
+      const plan = u.subscriptionPlan ? Auth.planLabel(u.subscriptionPlan) : '—';
+      const expires = u.subscriptionExpires === 'lifetime' ? 'Навсегда' : u.subscriptionExpires ? this.formatDate(u.subscriptionExpires) : '—';
 
-        return `<tr class="${u.banned ? 'admin-row-banned' : ''}">
-          <td><strong>${this.escape(u.username)}</strong></td>
-          <td>${this.escape(u.email)}</td>
-          <td>${plan}</td>
-          <td>${expires}</td>
-          <td>${hwid}</td>
-          <td>${this.formatDate(u.createdAt)}</td>
-          <td>${this.subBadge(u)}</td>
-          <td><button class="btn btn--ghost btn--sm admin-edit-btn" data-id="${u.id}">Изменить</button></td>
-        </tr>`;
-      })
-      .join('');
+      return `<tr class="${u.banned ? 'admin-row-banned' : ''}">
+        <td><strong>${this.escape(u.username)}</strong></td>
+        <td>${this.escape(u.email)}</td>
+        <td>${plan}</td>
+        <td>${expires}</td>
+        <td>${hwid}</td>
+        <td>${this.formatDate(u.createdAt)}</td>
+        <td>${this.subBadge(u)}</td>
+        <td><button class="btn btn--ghost btn--sm admin-edit-btn" data-id="${u.id}">Изменить</button></td>
+      </tr>`;
+    }).join('');
 
     tbody.querySelectorAll('.admin-edit-btn').forEach(btn => {
       btn.addEventListener('click', () => this.openEdit(btn.dataset.id));
@@ -157,37 +124,17 @@ const Admin = {
   },
 
   clearCredentials() {
-    const block = document.getElementById('editCredentials');
-    block.classList.add('hidden');
-    document.getElementById('credUsername').textContent = '—';
-    document.getElementById('credEmail').textContent = '—';
-    document.getElementById('credPassword').textContent = '—';
+    document.getElementById('editCredentials')?.classList.add('hidden');
   },
 
-  async loadCredentials(userId) {
+  async loadCredentials() {
     this.clearCredentials();
-    const res = await this.api(`/admin/users/${userId}/credentials`);
-    const data = await res.json();
-    if (!data.ok) return;
-
-    const block = document.getElementById('editCredentials');
-    if (!data.credentials) {
-      document.getElementById('credPassword').textContent = data.message || 'Недоступно';
-      block.classList.remove('hidden');
-      return;
-    }
-
-    document.getElementById('credUsername').textContent = data.credentials.username;
-    document.getElementById('credEmail').textContent = data.credentials.email;
-    document.getElementById('credPassword').textContent = data.credentials.password;
-    block.classList.remove('hidden');
   },
 
   openEdit(id) {
     const user = this.users.find(u => u.id === id);
     if (!user) return;
     this.editingId = id;
-
     document.getElementById('editTitle').textContent = user.username;
     document.getElementById('editSubtitle').textContent = user.email;
     document.getElementById('editPlan').value = user.subscriptionPlan || '';
@@ -195,7 +142,6 @@ const Admin = {
     document.getElementById('editHwid').value = user.hwid || '';
     document.getElementById('editBanned').checked = !!user.banned;
     document.getElementById('editModal').classList.remove('hidden');
-    this.loadCredentials(id);
   },
 
   closeEdit() {
@@ -206,32 +152,24 @@ const Admin = {
 
   async saveUser() {
     if (!this.editingId) return;
-
     const plan = document.getElementById('editPlan').value;
     const expires = document.getElementById('editExpires').value.trim();
     const hwid = document.getElementById('editHwid').value.trim();
     const banned = document.getElementById('editBanned').checked;
 
-    const body = { banned };
+    const patch = { banned, hwid: hwid || null };
     if (plan) {
-      body.subscriptionPlan = plan;
-      body.subscriptionExpires = expires || (plan === 'lifetime' ? 'lifetime' : undefined);
+      patch.subscriptionPlan = plan;
+      if (expires) patch.subscriptionExpires = expires;
     } else {
-      body.subscriptionPlan = null;
-      body.subscriptionExpires = null;
+      patch.subscriptionPlan = null;
     }
-    body.hwid = hwid || null;
 
-    const res = await this.api(`/admin/users/${this.editingId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(body),
-    });
-    const data = await res.json();
+    const data = await Auth.rpc('admin_update_user', { p_id: this.editingId, p_patch: patch });
     if (!data.ok) {
       Auth.showToast(data.error || 'Ошибка сохранения', 'error');
       return;
     }
-
     Auth.showToast('Пользователь обновлён');
     this.closeEdit();
     await this.loadStats();
@@ -241,17 +179,13 @@ const Admin = {
   async revokeSubscription() {
     if (!this.editingId) return;
     const user = this.users.find(u => u.id === this.editingId);
-    if (!confirm(`Забрать подписку у ${user?.username}? Доступ к моду сразу прекратится.`)) return;
+    if (!confirm(`Забрать подписку у ${user?.username}?`)) return;
 
-    const res = await this.api(`/admin/users/${this.editingId}/revoke-subscription`, {
-      method: 'POST',
-    });
-    const data = await res.json();
+    const data = await Auth.rpc('admin_revoke_subscription', { p_id: this.editingId });
     if (!data.ok) {
       Auth.showToast(data.error || 'Ошибка', 'error');
       return;
     }
-
     document.getElementById('editPlan').value = '';
     document.getElementById('editExpires').value = '';
     Auth.showToast('Подписка отозвана');
@@ -261,11 +195,7 @@ const Admin = {
 
   async resetHwid() {
     if (!this.editingId) return;
-    const res = await this.api(`/admin/users/${this.editingId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ hwid: null }),
-    });
-    const data = await res.json();
+    const data = await Auth.rpc('admin_update_user', { p_id: this.editingId, p_patch: { hwid: null } });
     if (!data.ok) {
       Auth.showToast(data.error || 'Ошибка', 'error');
       return;
@@ -278,15 +208,13 @@ const Admin = {
   async deleteUser() {
     if (!this.editingId) return;
     const user = this.users.find(u => u.id === this.editingId);
-    if (!confirm(`Удалить пользователя ${user?.username}? Это необратимо.`)) return;
+    if (!confirm(`Удалить ${user?.username}?`)) return;
 
-    const res = await this.api(`/admin/users/${this.editingId}`, { method: 'DELETE' });
-    const data = await res.json();
+    const data = await Auth.rpc('admin_delete_user', { p_id: this.editingId });
     if (!data.ok) {
       Auth.showToast(data.error || 'Ошибка удаления', 'error');
       return;
     }
-
     Auth.showToast('Пользователь удалён');
     this.closeEdit();
     await this.loadStats();
@@ -301,40 +229,28 @@ const Admin = {
       await this.loadUsers(document.getElementById('userSearch').value.trim());
       Auth.showToast('Данные обновлены');
     });
-
     document.getElementById('generateKeyBtn').addEventListener('click', () => this.generateKey());
     document.getElementById('copyKeyBtn').addEventListener('click', () => {
-      const code = document.getElementById('generatedKey').textContent;
-      navigator.clipboard?.writeText(code).then(() => Auth.showToast('Скопировано'));
+      navigator.clipboard?.writeText(document.getElementById('generatedKey').textContent).then(() => Auth.showToast('Скопировано'));
     });
-
     document.getElementById('userSearch').addEventListener('input', e => {
       clearTimeout(this.searchTimer);
       const q = e.target.value.trim();
       this.searchTimer = setTimeout(() => this.loadUsers(q), 300);
     });
-
     document.getElementById('editClose').addEventListener('click', () => this.closeEdit());
     document.getElementById('editBackdrop').addEventListener('click', () => this.closeEdit());
     document.getElementById('saveUserBtn').addEventListener('click', () => this.saveUser());
     document.getElementById('revokeSubBtn').addEventListener('click', () => this.revokeSubscription());
     document.getElementById('resetHwidBtn').addEventListener('click', () => this.resetHwid());
     document.getElementById('deleteUserBtn').addEventListener('click', () => this.deleteUser());
-    document.getElementById('copyCredBtn').addEventListener('click', () => {
-      const user = document.getElementById('credUsername').textContent;
-      const pass = document.getElementById('credPassword').textContent;
-      const text = `Логин: ${user}\nПароль: ${pass}`;
-      navigator.clipboard?.writeText(text).then(() => Auth.showToast('Скопировано'));
-    });
   },
 
   async init() {
     if (!(await Auth.requireAdmin())) return;
-
-    const user = Auth.getCurrentUser();
-    document.getElementById('adminUserName').textContent = user.username;
+    document.getElementById('adminUserName').textContent = Auth.getCurrentUser().username;
     this.bindEvents();
-    await this.loadDurations();
+    this.loadDurations();
     await this.loadStats();
     await this.loadKeys();
     await this.loadUsers();

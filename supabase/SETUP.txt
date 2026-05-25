@@ -1,0 +1,30 @@
+# VoltVisuals Supabase — что уже сделано и что осталось
+
+## Уже настроено автоматически
+- Project URL + publishable key в js/supabase-config.js
+- Админ: Lynivich / viva2288 (email: lynivich@voltvisuals.local)
+- Storage bucket: mod-releases
+- schema.sql (вы выполнили)
+- Auth: Confirm email OFF, Site URL (вы выполнили)
+
+## Один обязательный шаг — SQL
+Dashboard → SQL Editor → вставьте **supabase/rpc.sql** → Run
+
+Без этого не работают: ключи активации, админ-панель, скачивание мода.
+
+Или на ПК (нужен пароль БД в secrets.local.env):
+  node tools/apply-rpc.mjs
+
+## Edge Function (для мода Minecraft)
+Нужен SUPABASE_ACCESS_TOKEN: https://supabase.com/dashboard/account/tokens
+
+  supabase login --token ВАШ_ТОКЕН
+  supabase link --project-ref njgdqgrugpvaptfzejdv
+  supabase secrets set VOLT_HMAC_SECRET=...
+  supabase functions deploy vv-api --no-verify-jwt
+
+## JAR мода
+Storage → mod-releases → загрузить voltvisuals-1.6.1.jar
+
+## Безопасность
+Перевыпустите secret key в Dashboard (был в чате).
