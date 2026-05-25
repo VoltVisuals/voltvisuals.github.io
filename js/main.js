@@ -53,7 +53,7 @@ const CATEGORY_LABELS = {
   misc: 'Misc',
 };
 
-const THEMES = [
+const THEMES = typeof SiteTheme !== 'undefined' ? SiteTheme.THEMES : [
   { id: 'volt', name: 'VoltVisuals', start: '#8187FF', end: '#4D5199' },
   { id: 'emerald', name: 'Emerald', start: '#26C68C', end: '#1A8F63' },
   { id: 'ruby', name: 'Ruby', start: '#FF5C7A', end: '#B8324F' },
@@ -106,18 +106,29 @@ function showToast(msg) {
 }
 
 function applyTheme(theme) {
-  activeTheme = theme;
-  const root = document.documentElement;
-  root.style.setProperty('--accent', theme.start);
-  root.style.setProperty('--accent-dim', theme.end);
-  root.style.setProperty('--accent-glow', `${theme.start}4D`);
+  if (typeof SiteTheme !== 'undefined') {
+    SiteTheme.apply(theme);
+    activeTheme = SiteTheme.find(theme.id || theme);
+  } else {
+    activeTheme = theme;
+    const root = document.documentElement;
+    root.style.setProperty('--accent', theme.start);
+    root.style.setProperty('--accent-dim', theme.end);
+    root.style.setProperty('--accent-glow', `${theme.start}4D`);
+  }
 
   document.querySelectorAll('.theme-chip').forEach(chip => {
-    chip.classList.toggle('theme-chip--active', chip.dataset.theme === theme.id);
+    chip.classList.toggle('theme-chip--active', chip.dataset.theme === activeTheme.id);
   });
 
   document.querySelectorAll('.theme-preview-card').forEach(card => {
-    card.classList.toggle('theme-preview-card--active', card.dataset.theme === theme.id);
+    card.classList.toggle('theme-preview-card--active', card.dataset.theme === activeTheme.id);
+  });
+}
+
+function initThemePicker() {
+  document.querySelectorAll('.theme-preview-card[data-theme]').forEach(card => {
+    card.addEventListener('click', () => applyTheme(card.dataset.theme));
   });
 }
 
@@ -297,15 +308,6 @@ function initModuleTabs() {
   });
 }
 
-function initThemePicker() {
-  document.querySelectorAll('[data-theme]').forEach(el => {
-    el.addEventListener('click', () => {
-      const theme = THEMES.find(t => t.id === el.dataset.theme);
-      if (theme) applyTheme(theme);
-    });
-  });
-}
-
 function initInteractions() {
   document.addEventListener('click', e => {
     const toggle = e.target.closest('.gui-check[data-id]');
@@ -398,6 +400,7 @@ function initReveal() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  if (typeof SiteTheme !== 'undefined') SiteTheme.init();
   renderGuiModules('combat');
   renderModulesGrid('combat');
   initGuiTabs();
@@ -406,5 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initInteractions();
   initReveal();
   initCounterAnimation();
-  applyTheme(THEMES[0]);
+  if (typeof SiteTheme !== 'undefined') {
+    activeTheme = SiteTheme.find(document.documentElement.getAttribute('data-theme') || 'volt');
+  }
 });

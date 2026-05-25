@@ -75,7 +75,22 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_activation_keys_hash ON activation_keys(code_hash);
+
+  CREATE TABLE IF NOT EXISTS registration_credentials (
+    user_id TEXT PRIMARY KEY,
+    username TEXT NOT NULL,
+    email TEXT NOT NULL,
+    password_enc TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
 `);
+
+try {
+  db.exec('ALTER TABLE activation_keys ADD COLUMN duration_minutes INTEGER');
+} catch {
+  /* column exists */
+}
 
 function seedAdmin() {
   const existing = db

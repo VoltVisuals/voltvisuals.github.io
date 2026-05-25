@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%238187FF'/><path d='M18 6L10 18h5l-1 8 8-12h-5l1-8z' fill='white'/></svg>">
+  <script src="js/theme.js"></script>
+  <script>SiteTheme.init();</script>
 </head>
 <body>
   <div class="bg-mesh"></div>
@@ -214,13 +216,23 @@
 
   <footer class="footer">
     <div class="footer-bottom container">
-      <p>© 2026 VoltVisuals. Не аффилирован с Mojang AB.</p>
+      <p>© 2026 VoltVisuals. Не аффилирован с Mojang AB. · <a href="privacy.html">Конфиденциальность</a> · <a href="terms.html">Соглашение</a></p>
     </div>
   </footer>
 
+  <script src="js/cookies.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/emoji.js"></script>
   <script>
+    CookieConsent.init();
+
+    function planTotalDays(planId) {
+      const map = {
+        '1h': 1 / 24, '2h': 2 / 24, '3h': 3 / 24, '6h': 6 / 24, '12h': 0.5,
+        '1d': 1, '2d': 2, '3d': 3, '7d': 7, '14d': 14, '30d': 30, '6m': 180,
+      };
+      return map[planId] || 30;
+    }
 
     function daysRemaining(expires) {
       if (!expires || expires === 'lifetime') return null;
@@ -280,7 +292,7 @@
           licenseSub.textContent = 'Действует до ' + Auth.formatExpiry(user);
           progressWrap.classList.remove('hidden');
           document.getElementById('licenseProgressDays').textContent = days + ' дн.';
-          const total = user.subscriptionPlan === '6m' ? 180 : 30;
+          const total = Math.max(planTotalDays(user.subscriptionPlan), days, 1);
           const pct = Math.min(100, (days / total) * 100);
           document.getElementById('licenseProgressFill').style.width = pct + '%';
         }

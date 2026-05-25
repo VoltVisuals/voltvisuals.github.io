@@ -2,6 +2,7 @@ const Admin = {
   users: [],
   editingId: null,
   searchTimer: null,
+  durations: [],
 
   api(path, options = {}) {
     return fetch('/api' + path, {
@@ -17,6 +18,8 @@ const Admin = {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   },
 
@@ -30,6 +33,19 @@ const Admin = {
     return active
       ? '<span class="admin-tag admin-tag--green">Активна</span>'
       : '<span class="admin-tag admin-tag--red">Истекла</span>';
+  },
+
+  async loadDurations() {
+    const res = await this.api('/admin/durations');
+    const data = await res.json();
+    if (!data.ok) return;
+    this.durations = data.durations;
+    const select = document.getElementById('keyPlanSelect');
+    if (select) {
+      select.innerHTML = data.durations
+        .map(d => `<option value="${d.id}">${this.escape(d.label)}</option>`)
+        .join('');
+    }
   },
 
   async loadStats() {
@@ -54,8 +70,9 @@ const Admin = {
       const status = k.status === 'used'
         ? '<span class="admin-tag admin-tag--red">Использован</span>'
         : '<span class="admin-tag admin-tag--green">Активен</span>';
+      const label = k.label || Auth.planLabel(k.planId);
       return `<tr>
-        <td>${Auth.planLabel(k.planId)}</td>
+        <td>${this.escape(label)}</td>
         <td>${this.formatDate(k.createdAt)}</td>
         <td>${status}</td>
         <td>${k.usedAt ? this.formatDate(k.usedAt) : '—'}</td>
@@ -75,8 +92,9 @@ const Admin = {
       Auth.showToast(data.error || 'Ошибка генерации', 'error');
       return;
     }
-    const code = data.keys[0].code;
-    document.getElementById('generatedKey').textContent = code;
+    const key = data.keys[0];
+    document.getElementById('generatedKey').textContent = key.code;
+    document.getElementById('keyResultLabel').textContent = key.label || Auth.planLabel(key.planId);
     document.getElementById('keyResult').classList.remove('hidden');
     Auth.showToast('Ключ сгенерирован — скопируйте и передайте покупателю');
     await this.loadKeys();
@@ -138,6 +156,33 @@ const Admin = {
     return d.innerHTML;
   },
 
+  clearCredentials() {
+    const block = document.getElementById('editCredentials');
+    block.classList.add('hidden');
+    document.getElementById('credUsername').textContent = '—';
+    document.getElementById('credEmail').textContent = '—';
+    document.getElementById('credPassword').textContent = '—';
+  },
+
+  async loadCredentials(userId) {
+    this.clearCredentials();
+    const res = await this.api(`/admin/users/${userId}/credentials`);
+    const data = await res.json();
+    if (!data.ok) return;
+
+    const block = document.getElementById('editCredentials');
+    if (!data.credentials) {
+      document.getElementById('credPassword').textContent = data.message || 'Недоступно';
+      block.classList.remove('hidden');
+      return;
+    }
+
+    document.getElementById('credUsername').textContent = data.credentials.username;
+    document.getElementById('credEmail').textContent = data.credentials.email;
+    document.getElementById('credPassword').textContent = data.credentials.password;
+    block.classList.remove('hidden');
+  },
+
   openEdit(id) {
     const user = this.users.find(u => u.id === id);
     if (!user) return;
@@ -150,11 +195,13 @@ const Admin = {
     document.getElementById('editHwid').value = user.hwid || '';
     document.getElementById('editBanned').checked = !!user.banned;
     document.getElementById('editModal').classList.remove('hidden');
+    this.loadCredentials(id);
   },
 
   closeEdit() {
     document.getElementById('editModal').classList.add('hidden');
     this.editingId = null;
+    this.clearCredentials();
   },
 
   async saveUser() {
@@ -187,6 +234,27 @@ const Admin = {
 
     Auth.showToast('Пользователь обновлён');
     this.closeEdit();
+    await this.loadStats();
+    await this.loadUsers(document.getElementById('userSearch').value.trim());
+  },
+
+  async revokeSubscription() {
+    if (!this.editingId) return;
+    const user = this.users.find(u => u.id === this.editingId);
+    if (!confirm(`Забрать подписку у ${user?.username}? Доступ к моду сразу прекратится.`)) return;
+
+    const res = await this.api(`/admin/users/${this.editingId}/revoke-subscription`, {
+      method: 'POST',
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      Auth.showToast(data.error || 'Ошибка', 'error');
+      return;
+    }
+
+    document.getElementById('editPlan').value = '';
+    document.getElementById('editExpires').value = '';
+    Auth.showToast('Подписка отозвана');
     await this.loadStats();
     await this.loadUsers(document.getElementById('userSearch').value.trim());
   },
@@ -249,8 +317,15 @@ const Admin = {
     document.getElementById('editClose').addEventListener('click', () => this.closeEdit());
     document.getElementById('editBackdrop').addEventListener('click', () => this.closeEdit());
     document.getElementById('saveUserBtn').addEventListener('click', () => this.saveUser());
+    document.getElementById('revokeSubBtn').addEventListener('click', () => this.revokeSubscription());
     document.getElementById('resetHwidBtn').addEventListener('click', () => this.resetHwid());
     document.getElementById('deleteUserBtn').addEventListener('click', () => this.deleteUser());
+    document.getElementById('copyCredBtn').addEventListener('click', () => {
+      const user = document.getElementById('credUsername').textContent;
+      const pass = document.getElementById('credPassword').textContent;
+      const text = `Логин: ${user}\nПароль: ${pass}`;
+      navigator.clipboard?.writeText(text).then(() => Auth.showToast('Скопировано'));
+    });
   },
 
   async init() {
@@ -259,6 +334,7 @@ const Admin = {
     const user = Auth.getCurrentUser();
     document.getElementById('adminUserName').textContent = user.username;
     this.bindEvents();
+    await this.loadDurations();
     await this.loadStats();
     await this.loadKeys();
     await this.loadUsers();

@@ -8,6 +8,19 @@ const Auth = {
     lifetime: { days: null, price: 399, label: 'Навсегда', desc: 'Разовая покупка без ограничений' },
   },
 
+  DURATIONS: {
+    '1h': { label: '1 час' },
+    '2h': { label: '2 часа' },
+    '3h': { label: '3 часа' },
+    '6h': { label: '6 часов' },
+    '12h': { label: '12 часов' },
+    '1d': { label: '1 день' },
+    '2d': { label: '2 дня' },
+    '3d': { label: '3 дня' },
+    '7d': { label: '1 неделя' },
+    '14d': { label: '2 недели' },
+  },
+
   api(path, options = {}) {
     return fetch('/api' + path, {
       credentials: 'include',
@@ -145,7 +158,12 @@ const Auth = {
   },
 
   planLabel(planId) {
-    return this.PLANS[planId]?.label || '—';
+    return (
+      this.PLANS[planId]?.label ||
+      this.DURATIONS[planId]?.label ||
+      planId ||
+      '—'
+    );
   },
 
   getInitials(username) {

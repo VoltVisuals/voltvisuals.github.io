@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%238187FF'/><path d='M18 6L10 18h5l-1 8 8-12h-5l1-8z' fill='white'/></svg>">
+  <script src="js/theme.js"></script>
+  <script>SiteTheme.init();</script>
 </head>
 <body class="auth-page">
   <div class="bg-mesh"></div>
@@ -47,11 +49,14 @@
       <p class="auth-switch">
         Нет аккаунта? <a href="register.html">Зарегистрироваться</a>
       </p>
+      <p class="auth-legal">Регистрируясь, вы соглашаетесь с <a href="terms.html">соглашением</a> и <a href="privacy.html">политикой конфиденциальности</a>.</p>
     </div>
   </div>
 
+  <script src="js/cookies.js"></script>
   <script src="js/auth.js"></script>
   <script>
+    CookieConsent.init();
     (async () => {
       await Auth.init();
       if (Auth.getCurrentUser()) {

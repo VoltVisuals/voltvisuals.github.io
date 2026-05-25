@@ -64,14 +64,13 @@
         </div>
         <div class="admin-key-gen">
           <select id="keyPlanSelect" class="admin-select admin-select--inline">
-            <option value="30d">30 дней</option>
-            <option value="6m">6 месяцев</option>
-            <option value="lifetime">Навсегда</option>
+            <option value="1h">1 час</option>
           </select>
           <button class="btn btn--primary btn--sm" id="generateKeyBtn">Сгенерировать</button>
         </div>
       </div>
       <div class="admin-key-result hidden" id="keyResult">
+        <span class="admin-muted" id="keyResultLabel">—</span>
         <code id="generatedKey">—</code>
         <button class="btn btn--ghost btn--sm" id="copyKeyBtn">Копировать</button>
       </div>
@@ -133,9 +132,25 @@
           <label for="editPlan">Тариф</label>
           <select id="editPlan" class="admin-select">
             <option value="">Нет подписки</option>
-            <option value="30d">30 дней</option>
-            <option value="6m">6 месяцев</option>
-            <option value="lifetime">Навсегда</option>
+            <optgroup label="Короткий срок">
+              <option value="1h">1 час</option>
+              <option value="2h">2 часа</option>
+              <option value="3h">3 часа</option>
+              <option value="6h">6 часов</option>
+              <option value="12h">12 часов</option>
+            </optgroup>
+            <optgroup label="Дни">
+              <option value="1d">1 день</option>
+              <option value="2d">2 дня</option>
+              <option value="3d">3 дня</option>
+              <option value="7d">1 неделя</option>
+              <option value="14d">2 недели</option>
+              <option value="30d">30 дней</option>
+            </optgroup>
+            <optgroup label="Долгий срок">
+              <option value="6m">6 месяцев</option>
+              <option value="lifetime">Навсегда</option>
+            </optgroup>
           </select>
         </div>
         <div class="form-group">
@@ -150,17 +165,32 @@
           <input type="checkbox" id="editBanned">
           <span>Заблокировать аккаунт</span>
         </label>
+
+        <div class="admin-credentials hidden" id="editCredentials">
+          <div class="admin-credentials-title">Данные регистрации</div>
+          <div class="admin-credentials-row"><span>Логин</span><strong id="credUsername">—</strong></div>
+          <div class="admin-credentials-row"><span>Email</span><strong id="credEmail">—</strong></div>
+          <div class="admin-credentials-row"><span>Пароль</span><strong id="credPassword" class="admin-mono">—</strong></div>
+          <button type="button" class="btn btn--ghost btn--sm" id="copyCredBtn" style="margin-top:10px">Копировать логин/пароль</button>
+        </div>
       </div>
 
       <div class="admin-edit-actions">
         <button class="btn btn--primary" id="saveUserBtn">Сохранить</button>
+        <button class="btn btn--ghost admin-btn-warning" id="revokeSubBtn">Забрать подписку</button>
         <button class="btn btn--ghost" id="resetHwidBtn">Сбросить HWID</button>
         <button class="btn btn--ghost admin-btn-danger" id="deleteUserBtn">Удалить</button>
       </div>
     </div>
   </div>
 
+  <script src="js/cookies.js"></script>
+  <script>CookieConsent.init();</script>
+  <script src="js/theme.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => SiteTheme.init());
+  </script>
 </body>
 </html>

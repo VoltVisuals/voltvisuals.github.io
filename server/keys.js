@@ -2,15 +2,42 @@ const crypto = require('crypto');
 const { db, uuidv4, getUserById, isSubscriptionActive } = require('./db');
 const { hmac, hashCode, rateLimitMiddleware, logAuthFail, getClientIp } = require('./security');
 
-const PLAN_CODES = {
-  '30d': '30D',
-  '6m': '6MO',
-  lifetime: 'LIFE',
+const DURATIONS = {
+  '1h': { code: '1H', minutes: 60, label: '1 час' },
+  '2h': { code: '2H', minutes: 120, label: '2 часа' },
+  '3h': { code: '3H', minutes: 180, label: '3 часа' },
+  '6h': { code: '6H', minutes: 360, label: '6 часов' },
+  '12h': { code: '12H', minutes: 720, label: '12 часов' },
+  '1d': { code: '1D', minutes: 1440, label: '1 день' },
+  '2d': { code: '2D', minutes: 2880, label: '2 дня' },
+  '3d': { code: '3D', minutes: 4320, label: '3 дня' },
+  '7d': { code: '7D', minutes: 10080, label: '1 неделя' },
+  '14d': { code: '14D', minutes: 20160, label: '2 недели' },
+  '30d': { code: '30D', minutes: 43200, label: '30 дней' },
+  '6m': { code: '6MO', minutes: 259200, label: '6 месяцев' },
+  lifetime: { code: 'LIFE', minutes: null, label: 'Навсегда' },
 };
 
-const CODE_TO_PLAN = Object.fromEntries(
-  Object.entries(PLAN_CODES).map(([k, v]) => [v, k])
+const PLAN_CODES = Object.fromEntries(
+  Object.entries(DURATIONS).map(([id, d]) => [id, d.code])
 );
+
+const CODE_TO_PLAN = Object.fromEntries(
+  Object.entries(DURATIONS).map(([id, d]) => [d.code, id])
+);
+
+const DUR_CODE_PATTERN = Object.values(DURATIONS)
+  .map(d => d.code)
+  .join('|');
+
+function durationLabel(planId, durationMinutes) {
+  if (durationMinutes && DURATIONS[planId]) {
+    return DURATIONS[planId].label;
+  }
+  if (planId && DURATIONS[planId]) return DURATIONS[planId].label;
+  if (planId === 'lifetime') return 'Навсегда';
+  return planId || '—';
+}
 
 function normalizeCode(raw) {
   return (raw || '').trim().toUpperCase().replace(/\s+/g, '');
@@ -21,32 +48,64 @@ function buildSignature(planCode, randomPart) {
 }
 
 function generateActivationKey(planId, createdBy) {
-  const planCode = PLAN_CODES[planId];
-  if (!planCode) throw new Error('Unknown plan');
+  const meta = DURATIONS[planId];
+  if (!meta) throw new Error('Unknown plan');
 
   const randomPart = crypto.randomBytes(6).toString('hex').toUpperCase();
-  const sig = buildSignature(planCode, randomPart);
-  const code = `VV-${planCode}-${randomPart}-${sig}`;
+  const sig = buildSignature(meta.code, randomPart);
+  const code = `VV-${meta.code}-${randomPart}-${sig}`;
   const id = uuidv4();
 
   db.prepare(`
-    INSERT INTO activation_keys (id, code_hash, plan_id, created_at, created_by)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(id, hashCode(code), planId, new Date().toISOString(), createdBy || null);
+    INSERT INTO activation_keys (id, code_hash, plan_id, duration_minutes, created_at, created_by)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    hashCode(code),
+    planId,
+    meta.minutes,
+    new Date().toISOString(),
+    createdBy || null
+  );
 
-  return { id, code, planId };
+  return { id, code, planId, label: meta.label };
 }
 
 function validateKeyFormat(code) {
   const normalized = normalizeCode(code);
-  const match = normalized.match(/^VV-(30D|6MO|LIFE)-([A-F0-9]{12})-([A-F0-9]{8})$/);
+  const match = normalized.match(
+    new RegExp(`^VV-(${DUR_CODE_PATTERN})-([A-F0-9]{12})-([A-F0-9]{8})$`)
+  );
   if (!match) return null;
 
   const [, planCode, randomPart, sig] = match;
   const expected = buildSignature(planCode, randomPart);
   if (sig !== expected) return null;
 
-  return { planId: CODE_TO_PLAN[planCode], normalized: `VV-${planCode}-${randomPart}-${sig}` };
+  return {
+    planId: CODE_TO_PLAN[planCode],
+    normalized: `VV-${planCode}-${randomPart}-${sig}`,
+  };
+}
+
+function computeExpiryFromKey(planId, durationMinutes, user) {
+  if (planId === 'lifetime') return 'lifetime';
+
+  let minutes = durationMinutes;
+  if (minutes == null && DURATIONS[planId]) {
+    minutes = DURATIONS[planId].minutes;
+  }
+  if (minutes == null) {
+    const days = planId === '6m' ? 180 : 30;
+    minutes = days * 24 * 60;
+  }
+
+  const base =
+    isSubscriptionActive(user) && user.subscriptionExpires !== 'lifetime'
+      ? new Date(user.subscriptionExpires)
+      : new Date();
+  base.setTime(base.getTime() + minutes * 60 * 1000);
+  return base.toISOString();
 }
 
 function redeemActivationKey(rawCode, userId, expectedPlanId) {
@@ -55,7 +114,13 @@ function redeemActivationKey(rawCode, userId, expectedPlanId) {
     return { ok: false, error: 'Неверный код активации', code: 'INVALID_KEY' };
   }
 
-  if (expectedPlanId && parsed.planId !== expectedPlanId) {
+  const legacyPlans = ['30d', '6m', 'lifetime'];
+  if (
+    expectedPlanId &&
+    legacyPlans.includes(expectedPlanId) &&
+    legacyPlans.includes(parsed.planId) &&
+    parsed.planId !== expectedPlanId
+  ) {
     return {
       ok: false,
       error: 'Код не подходит к выбранному тарифу',
@@ -80,7 +145,7 @@ function redeemActivationKey(rawCode, userId, expectedPlanId) {
   const user = getUserById(userId);
   if (!user) return { ok: false, error: 'Пользователь не найден' };
 
-  const expires = computeExpiry(row.plan_id, user);
+  const expires = computeExpiryFromKey(row.plan_id, row.duration_minutes, user);
   db.prepare(`
     UPDATE users SET subscription_plan = ?, subscription_expires = ? WHERE id = ?
   `).run(row.plan_id, expires, userId);
@@ -89,18 +154,12 @@ function redeemActivationKey(rawCode, userId, expectedPlanId) {
     UPDATE activation_keys SET used_at = ?, used_by = ? WHERE id = ?
   `).run(new Date().toISOString(), userId, row.id);
 
-  return { ok: true, user: getUserById(userId), planId: row.plan_id };
-}
-
-function computeExpiry(planId, user) {
-  if (planId === 'lifetime') return 'lifetime';
-  const days = planId === '6m' ? 180 : 30;
-  const base =
-    isSubscriptionActive(user) && user.subscriptionExpires !== 'lifetime'
-      ? new Date(user.subscriptionExpires)
-      : new Date();
-  base.setDate(base.getDate() + days);
-  return base.toISOString();
+  return {
+    ok: true,
+    user: getUserById(userId),
+    planId: row.plan_id,
+    label: durationLabel(row.plan_id, row.duration_minutes),
+  };
 }
 
 function listKeys() {
@@ -116,6 +175,8 @@ function listKeys() {
     .map(row => ({
       id: row.id,
       planId: row.plan_id,
+      durationMinutes: row.duration_minutes,
+      label: durationLabel(row.plan_id, row.duration_minutes),
       createdAt: row.created_at,
       usedAt: row.used_at,
       usedBy: row.used_by_name || null,
@@ -131,7 +192,7 @@ function registerKeyRoutes(app, { requireAuth, requireAdmin }) {
     const planId = req.body.planId || null;
     const result = redeemActivationKey(code, req.user.id, planId);
     if (!result.ok) {
-      logAuthFail('redeem', getClientIp(req), `${req.user.username}:${planId}`);
+      logAuthFail('redeem', getClientIp(req), `${req.user.username}:${planId || 'any'}`);
       return res.status(result.code === 'INVALID_KEY' ? 400 : 403).json(result);
     }
     res.json(result);
@@ -141,11 +202,20 @@ function registerKeyRoutes(app, { requireAuth, requireAdmin }) {
     res.json({ ok: true, keys: listKeys() });
   });
 
+  app.get('/api/admin/durations', requireAdmin, (req, res) => {
+    const items = Object.entries(DURATIONS).map(([id, d]) => ({
+      id,
+      label: d.label,
+      code: d.code,
+    }));
+    res.json({ ok: true, durations: items });
+  });
+
   app.post('/api/admin/keys/generate', requireAdmin, (req, res) => {
     const planId = req.body.planId;
     const count = Math.min(Math.max(parseInt(req.body.count, 10) || 1, 1), 20);
-    if (!PLAN_CODES[planId]) {
-      return res.status(400).json({ ok: false, error: 'Неизвестный тариф' });
+    if (!DURATIONS[planId]) {
+      return res.status(400).json({ ok: false, error: 'Неизвестный срок' });
     }
 
     const keys = [];
@@ -162,4 +232,7 @@ module.exports = {
   redeemActivationKey,
   registerKeyRoutes,
   PLAN_CODES,
+  DURATIONS,
+  durationLabel,
+  computeExpiryFromKey,
 };
