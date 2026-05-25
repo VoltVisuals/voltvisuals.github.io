@@ -251,4 +251,100 @@ USING (
   )
 );
 
+-- Mod API (RPC вместо Edge Function)
+CREATE OR REPLACE FUNCTION public.mod_sign(p_token TEXT, p_username TEXT, p_expires BIGINT)
+RETURNS TEXT LANGUAGE sql IMMUTABLE AS $$
+  SELECT upper(substr(encode(hmac(
+    ('Vv1.6.1#volt|' || p_token || '|' || p_username || '|' || p_expires::text)::bytea,
+    public.cfg('volt_mod_key')::bytea, 'sha256'), 'hex'), 1, 16));
+$$;
+
+CREATE OR REPLACE FUNCTION public.mod_login(
+  p_login TEXT, p_password TEXT, p_hwid TEXT, p_mod_version TEXT DEFAULT '1.6.1'
+) RETURNS JSON LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth, extensions AS $$
+DECLARE
+  v_email TEXT; v_uid UUID; v_enc TEXT; v_user profiles%ROWTYPE;
+  v_token TEXT; v_now BIGINT; v_expires BIGINT; v_sig TEXT; v_hw TEXT;
+BEGIN
+  v_hw := upper(trim(coalesce(p_hwid, '')));
+  IF length(v_hw) < 16 THEN RETURN json_build_object('ok', false, 'error', 'Некорректный HWID'); END IF;
+  IF coalesce(trim(p_login), '') = '' OR coalesce(p_password, '') = '' THEN
+    RETURN json_build_object('ok', false, 'error', 'Укажите логин и пароль');
+  END IF;
+
+  v_email := CASE WHEN position('@' in trim(p_login)) > 0 THEN lower(trim(p_login))
+    ELSE public.get_email_by_username(trim(p_login)) END;
+  IF v_email IS NULL THEN RETURN json_build_object('ok', false, 'error', 'Неверный логин или пароль'); END IF;
+
+  SELECT id, encrypted_password INTO v_uid, v_enc FROM auth.users
+  WHERE email = v_email AND deleted_at IS NULL LIMIT 1;
+  IF NOT FOUND OR v_enc IS NULL OR v_enc <> extensions.crypt(p_password, v_enc) THEN
+    RETURN json_build_object('ok', false, 'error', 'Неверный логин или пароль');
+  END IF;
+
+  SELECT * INTO v_user FROM profiles WHERE id = v_uid;
+  IF NOT FOUND THEN RETURN json_build_object('ok', false, 'error', 'Пользователь не найден'); END IF;
+  IF v_user.role = 'admin' THEN RETURN json_build_object('ok', false, 'error', 'Войдите через обычный аккаунт с подпиской'); END IF;
+  IF v_user.banned THEN RETURN json_build_object('ok', false, 'error', 'Аккаунт заблокирован', 'code', 'BANNED'); END IF;
+  IF NOT public.sub_active(v_user.subscription_expires) THEN
+    RETURN json_build_object('ok', false, 'error', 'Нет активной подписки', 'code', 'NO_SUBSCRIPTION');
+  END IF;
+
+  IF v_user.hwid IS NULL OR v_user.hwid = '' THEN
+    UPDATE profiles SET hwid = v_hw WHERE id = v_uid;
+    v_user.hwid := v_hw;
+  ELSIF v_user.hwid <> v_hw THEN
+    RETURN json_build_object('ok', false, 'error', 'HWID не совпадает', 'code', 'HWID_MISMATCH');
+  END IF;
+
+  DELETE FROM mod_sessions WHERE user_id = v_uid;
+  v_token := replace(gen_random_uuid()::text, '-', '') || replace(gen_random_uuid()::text, '-', '');
+  v_now := (extract(epoch from now()) * 1000)::bigint;
+  v_expires := v_now + 14 * 86400000;
+  INSERT INTO mod_sessions (token, user_id, hwid, expires_at, created_at)
+  VALUES (v_token, v_uid, v_hw, v_expires, v_now);
+
+  v_sig := public.mod_sign(v_token, v_user.username, v_expires);
+  RETURN json_build_object(
+    'ok', true, 'token', v_token, 'expiresAt', v_expires, 'username', v_user.username,
+    'subscriptionPlan', v_user.subscription_plan, 'subscriptionExpires', v_user.subscription_expires,
+    'hwidBound', true, 'modVersion', coalesce(nullif(trim(p_mod_version), ''), '1.6.1'), 'sig', v_sig
+  );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.mod_verify(p_token TEXT, p_hwid TEXT)
+RETURNS JSON LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_sess mod_sessions%ROWTYPE; v_user profiles%ROWTYPE; v_hw TEXT; v_expires BIGINT; v_sig TEXT;
+BEGIN
+  v_hw := upper(trim(coalesce(p_hwid, '')));
+  IF coalesce(trim(p_token), '') = '' OR length(v_hw) < 16 THEN
+    RETURN json_build_object('ok', false, 'error', 'Нет токена или HWID');
+  END IF;
+
+  SELECT * INTO v_sess FROM mod_sessions WHERE token = trim(p_token) AND expires_at > (extract(epoch from now()) * 1000)::bigint;
+  IF NOT FOUND THEN RETURN json_build_object('ok', false, 'error', 'Сессия истекла', 'code', 'TOKEN_EXPIRED'); END IF;
+  IF v_sess.hwid <> v_hw THEN RETURN json_build_object('ok', false, 'error', 'HWID не совпадает', 'code', 'HWID_MISMATCH'); END IF;
+
+  SELECT * INTO v_user FROM profiles WHERE id = v_sess.user_id;
+  IF NOT FOUND THEN RETURN json_build_object('ok', false, 'error', 'Пользователь не найден'); END IF;
+  IF v_user.banned THEN RETURN json_build_object('ok', false, 'error', 'Аккаунт заблокирован', 'code', 'BANNED'); END IF;
+  IF NOT public.sub_active(v_user.subscription_expires) THEN
+    RETURN json_build_object('ok', false, 'error', 'Подписка истекла', 'code', 'NO_SUBSCRIPTION');
+  END IF;
+
+  v_expires := (extract(epoch from now()) * 1000)::bigint + 14 * 86400000;
+  v_sig := public.mod_sign(trim(p_token), v_user.username, v_expires);
+  RETURN json_build_object(
+    'ok', true, 'expiresAt', v_expires, 'username', v_user.username,
+    'subscriptionPlan', v_user.subscription_plan, 'subscriptionExpires', v_user.subscription_expires,
+    'hwidBound', v_user.hwid IS NOT NULL AND v_user.hwid <> '', 'modVersion', '1.6.1', 'sig', v_sig
+  );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.mod_login(TEXT, TEXT, TEXT, TEXT) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.mod_verify(TEXT, TEXT) TO anon, authenticated;
+
 -- UPDATE public.profiles SET role = 'admin' WHERE email = 'ваш@email.com';
