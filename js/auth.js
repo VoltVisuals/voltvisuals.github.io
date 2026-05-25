@@ -236,7 +236,9 @@ const Auth = {
         if (!btn) {
           btn = document.createElement('a');
           btn.href = 'admin.html';
-          btn.className = container.id === 'mobileUser' ? 'nav-admin-btn mobile-admin-link' : 'btn btn--primary btn--sm nav-admin-btn';
+          btn.className = container.id === 'mobileUser'
+            ? 'btn btn--ghost btn--full nav-admin-btn mobile-admin-link'
+            : 'btn btn--primary btn--sm nav-admin-btn';
           btn.textContent = 'Админ-pанель';
           const logout = container.querySelector('#logoutBtn, #mobileLogoutBtn');
           if (logout) container.insertBefore(btn, logout);
@@ -382,22 +384,142 @@ const Auth = {
       if (name) name.textContent = current.username;
       if (mobName) mobName.textContent = current.username;
       this.injectAdminNav();
+      this.updateMobileProfileFab(current);
     } else {
       guest?.classList.remove('hidden');
       userEl?.classList.add('hidden');
       mobileGuest?.classList.remove('hidden');
       mobileUser?.classList.add('hidden');
       document.querySelectorAll('.nav-admin-btn').forEach(el => el.remove());
+      document.getElementById('mobileProfileFab')?.remove();
     }
   },
 
+  updateMobileProfileFab(user) {
+    if (!user || window.innerWidth > 768) {
+      document.getElementById('mobileProfileFab')?.classList.add('hidden');
+      return;
+    }
+    let fab = document.getElementById('mobileProfileFab');
+    if (!fab) {
+      fab = document.createElement('a');
+      fab.id = 'mobileProfileFab';
+      fab.className = 'mobile-profile-fab';
+      fab.href = 'profile.html';
+      fab.innerHTML = '<span class="mobile-profile-fab-avatar" id="mobileFabAvatar"></span><span>Профиль</span>';
+      document.body.appendChild(fab);
+    }
+    fab.classList.remove('hidden');
+    const av = fab.querySelector('#mobileFabAvatar');
+    if (av) {
+      av.textContent = this.getInitials(user.username);
+      av.style.background = `linear-gradient(135deg, ${this.avatarColor(user.username)}, var(--accent-dim))`;
+    }
+  },
+
+  enhanceMobileMenu() {
+    const menu = document.getElementById('mobileMenu');
+    if (!menu || menu.dataset.vvEnhanced) return;
+    menu.dataset.vvEnhanced = '1';
+
+    const guest = document.getElementById('mobileGuest');
+    const loginHref = guest?.querySelector('a[href*="login"]')?.getAttribute('href') || 'login.html';
+    const regHref = guest?.querySelector('a[href*="register"]')?.getAttribute('href') || 'register.html';
+
+    if (guest) {
+      guest.innerHTML = `
+        <p class="mobile-menu-label">Аккаунт</p>
+        <div class="mobile-auth-actions">
+          <a href="${regHref}" class="btn btn--primary btn--full btn--lg">Регистрация</a>
+          <a href="${loginHref}" class="btn btn--ghost btn--full">Вход в аккаунт</a>
+        </div>`;
+    }
+
+    const user = document.getElementById('mobileUser');
+    if (user) {
+      user.innerHTML = `
+        <p class="mobile-menu-label">Мой аккаунт</p>
+        <div class="mobile-profile-card">
+          <span class="nav-avatar" id="mobileNavAvatar"></span>
+          <div class="mobile-profile-card-meta">
+            <span class="mobile-profile-card-hint">Вы вошли как</span>
+            <span class="mobile-profile-card-name" id="mobileNavUsername">—</span>
+          </div>
+        </div>
+        <a href="profile.html" class="btn btn--primary btn--full btn--lg mobile-profile-go">Открыть профиль</a>
+        <a href="buy.html" class="btn btn--ghost btn--full">Покупки</a>
+        <button type="button" class="mobile-logout-btn" id="mobileLogoutBtn">Выйти из аккаунта</button>`;
+    }
+
+    const navLinks = [...menu.querySelectorAll(':scope > a[href]')];
+    if (navLinks.length) {
+      const section = document.createElement('div');
+      section.className = 'mobile-menu-section mobile-menu-section--links';
+      section.innerHTML = '<p class="mobile-menu-label">Меню</p>';
+      const nav = document.createElement('nav');
+      nav.className = 'mobile-menu-links';
+      navLinks.forEach(link => nav.appendChild(link));
+      section.appendChild(nav);
+      menu.appendChild(section);
+    }
+
+    if (guest) menu.insertBefore(guest, menu.firstChild);
+    if (user) menu.insertBefore(user, guest ? guest.nextSibling : menu.firstChild);
+
+    let backdrop = document.getElementById('mobileMenuBackdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.id = 'mobileMenuBackdrop';
+      backdrop.className = 'mobile-menu-backdrop';
+      backdrop.setAttribute('aria-hidden', 'true');
+      menu.parentElement.insertBefore(backdrop, menu);
+    }
+  },
+
+  setMobileMenuOpen(open) {
+    const menu = document.getElementById('mobileMenu');
+    const backdrop = document.getElementById('mobileMenuBackdrop');
+    const burger = document.getElementById('navBurger');
+    if (!menu) return;
+    menu.classList.toggle('open', open);
+    backdrop?.classList.toggle('open', open);
+    burger?.classList.toggle('nav-burger--open', open);
+    burger?.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.body.classList.toggle('menu-open', open);
+  },
+
   initNav() {
+    this.enhanceMobileMenu();
     this.renderNav();
+
     document.getElementById('logoutBtn')?.addEventListener('click', e => { e.preventDefault(); this.logout(); });
-    document.getElementById('mobileLogoutBtn')?.addEventListener('click', e => { e.preventDefault(); this.logout(); });
-    document.getElementById('navBurger')?.addEventListener('click', () => document.getElementById('mobileMenu')?.classList.toggle('open'));
-    document.getElementById('mobileMenu')?.querySelectorAll('a').forEach(l => l.addEventListener('click', () => document.getElementById('mobileMenu')?.classList.remove('open')));
+    document.getElementById('mobileMenu')?.addEventListener('click', e => {
+      if (e.target.id === 'mobileLogoutBtn' || e.target.closest('#mobileLogoutBtn')) {
+        e.preventDefault();
+        this.logout();
+      }
+    });
+
+    const burger = document.getElementById('navBurger');
+    burger?.addEventListener('click', () => {
+      const menu = document.getElementById('mobileMenu');
+      this.setMobileMenuOpen(!menu?.classList.contains('open'));
+    });
+
+    document.getElementById('mobileMenuBackdrop')?.addEventListener('click', () => this.setMobileMenuOpen(false));
+
+    document.getElementById('mobileMenu')?.querySelectorAll('a').forEach(l => {
+      l.addEventListener('click', () => this.setMobileMenuOpen(false));
+    });
+
     window.addEventListener('scroll', () => document.getElementById('header')?.classList.toggle('scrolled', window.scrollY > 40));
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) this.setMobileMenuOpen(false);
+      const current = this.getCurrentUser();
+      if (current) this.updateMobileProfileFab(current);
+      else document.getElementById('mobileProfileFab')?.remove();
+    });
   },
 
   onAuthStateChange() {
