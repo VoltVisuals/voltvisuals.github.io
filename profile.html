@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профиль — VoltVisuals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%238187FF'/><path d='M18 6L10 18h5l-1 8 8-12h-5l1-8z' fill='white'/></svg>">
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <div class="bg-orb bg-orb--1"></div>
+  <div class="bg-orb bg-orb--2"></div>
+  <div class="bg-noise"></div>
+
+  <header class="header scrolled" id="header">
+    <nav class="nav container">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L7 14h4l-1 8 7-11h-4l1-9z" fill="white"/></svg>
+        </span>
+        <span class="logo-text">Volt<span class="logo-accent">Visuals</span></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html#benefits">Преимущества</a></li>
+        <li><a href="buy.html">Купить</a></li>
+        <li><a href="profile.html" class="nav-active">Профиль</a></li>
+      </ul>
+      <div class="nav-auth">
+        <div id="navGuest" class="nav-guest hidden">
+          <a href="login.html" class="btn btn--ghost btn--sm">Вход</a>
+          <a href="register.html" class="btn btn--primary btn--sm">Регистрация</a>
+        </div>
+        <div id="navUser" class="nav-user">
+          <a href="profile.html" class="nav-profile-link">
+            <span class="nav-avatar" id="navAvatar"></span>
+            <span id="navUsername"></span>
+          </a>
+          <a href="#" class="btn btn--ghost btn--sm" id="logoutBtn">Выйти</a>
+        </div>
+      </div>
+      <button class="nav-burger" id="navBurger" aria-label="Меню"><span></span><span></span><span></span></button>
+    </nav>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="index.html">Главная</a>
+      <a href="buy.html">Купить</a>
+      <a href="profile.html">Профиль</a>
+      <div id="mobileGuest" class="hidden"><a href="login.html">Вход</a><a href="register.html">Регистрация</a></div>
+      <div id="mobileUser">
+        <div class="mobile-user-info"><span class="nav-avatar" id="mobileNavAvatar"></span><span id="mobileNavUsername"></span></div>
+        <a href="#" id="mobileLogoutBtn">Выйти</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-main page-main--profile">
+    <div class="container">
+
+      <!-- License hero banner -->
+      <div class="profile-license-hero" id="licenseHero">
+        <div class="profile-license-hero-bg"></div>
+        <div class="profile-license-hero-inner">
+          <div class="profile-license-hero-left">
+            <div class="profile-avatar-ring">
+              <div class="profile-avatar" id="profileAvatar"></div>
+            </div>
+            <div class="profile-hero-info">
+              <div class="profile-status" id="profileStatus">
+                <span class="status-dot"></span>
+                <span id="statusText">—</span>
+              </div>
+              <h1 class="profile-username" id="profileUsername">—</h1>
+              <p class="profile-since" id="profileSince">—</p>
+            </div>
+          </div>
+          <div class="profile-license-hero-right">
+            <div class="license-state" id="licenseState">
+              <div class="license-state-icon" id="licenseIcon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <div class="license-state-text">
+                <span class="license-state-label" id="licenseLabel">Лицензия</span>
+                <span class="license-state-value" id="licenseValue">Не активна</span>
+                <span class="license-state-sub" id="licenseSub">Купите подписку для доступа к модулям</span>
+              </div>
+            </div>
+            <div class="license-progress-wrap hidden" id="licenseProgressWrap">
+              <div class="license-progress-meta">
+                <span id="licenseProgressLabel">Осталось</span>
+                <span id="licenseProgressDays">—</span>
+              </div>
+              <div class="license-progress-bar">
+                <div class="license-progress-fill" id="licenseProgressFill"></div>
+              </div>
+            </div>
+            <a href="buy.html" class="btn btn--primary" id="profileBuyBtn">Купить подписку</a>
+            <a href="admin.html" class="btn btn--primary hidden" id="profileAdminBtn">Админ-панель</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick stats -->
+      <div class="profile-quick-stats">
+        <div class="profile-stat-pill">
+          <span class="profile-stat-icon emoji-ios">⚡️</span>
+          <div>
+            <span class="profile-stat-val">v1.6.1</span>
+            <span class="profile-stat-lbl">Версия мода</span>
+          </div>
+        </div>
+        <div class="profile-stat-pill">
+          <span class="profile-stat-icon emoji-ios">🎮</span>
+          <div>
+            <span class="profile-stat-val">Fabric 1.20.1</span>
+            <span class="profile-stat-lbl">Платформа</span>
+          </div>
+        </div>
+        <div class="profile-stat-pill" id="planStatPill">
+          <span class="profile-stat-icon emoji-ios">🔑</span>
+          <div>
+            <span class="profile-stat-val" id="statPlan">—</span>
+            <span class="profile-stat-lbl">Тариф</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-grid">
+        <!-- Account -->
+        <div class="profile-card profile-card--account">
+          <div class="profile-card-head">
+            <span class="profile-card-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <h3>Данные аккаунта</h3>
+          </div>
+          <div class="profile-fields">
+            <div class="profile-field-row">
+              <span class="field-icon emoji-ios">👤</span>
+              <div class="field-body">
+                <span class="field-label">Никнейм</span>
+                <span class="field-value" id="fieldUsername">—</span>
+              </div>
+            </div>
+            <div class="profile-field-row">
+              <span class="field-icon emoji-ios">✉️</span>
+              <div class="field-body">
+                <span class="field-label">Email</span>
+                <span class="field-value" id="fieldEmail">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HWID & License details -->
+        <div class="profile-card profile-card--hwid">
+          <div class="profile-card-head">
+            <span class="profile-card-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </span>
+            <h3>HWID & лицензия</h3>
+          </div>
+          <div class="profile-fields">
+            <div class="profile-field-row">
+              <span class="field-icon emoji-ios">🖥️</span>
+              <div class="field-body">
+                <span class="field-label">HWID мода</span>
+                <span class="field-value field-value--mono" id="fieldHwid">—</span>
+              </div>
+            </div>
+            <div class="profile-field-row">
+              <span class="field-icon emoji-ios">📅</span>
+              <div class="field-body">
+                <span class="field-label">Действует до</span>
+                <span class="field-value field-value--accent" id="fieldExpires">—</span>
+              </div>
+            </div>
+          </div>
+          <p class="profile-hint">HWID привязывается автоматически при первом входе в мод (логин + пароль с сайта).</p>
+        </div>
+
+        <!-- Download -->
+        <div class="profile-card profile-card--download" id="downloadBlock">
+          <div class="profile-card-head">
+            <span class="profile-card-icon profile-card-icon--dl">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </span>
+            <h3>Скачать мод</h3>
+          </div>
+          <div class="download-file-card" id="downloadFileCard">
+            <div class="download-file-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M13 2L7 14h4l-1 8 7-11h-4l1-9z" fill="var(--accent)"/></svg>
+            </div>
+            <div class="download-file-info">
+              <span class="download-file-name">voltvisuals-1.6.1.jar</span>
+              <div class="download-file-tags">
+                <span>Fabric 1.20.1</span>
+                <span>Java 17+</span>
+                <span>Fabric API</span>
+              </div>
+            </div>
+            <button class="btn btn--primary download-btn" id="downloadModBtn" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Скачать
+            </button>
+          </div>
+          <p class="profile-hint" id="downloadHint">Скачивание доступно только при активной подписке. Мод работает только на вашем ПК после привязки HWID.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-bottom container">
+      <p>© 2026 VoltVisuals. Не аффилирован с Mojang AB.</p>
+    </div>
+  </footer>
+
+  <script src="js/auth.js"></script>
+  <script src="js/emoji.js"></script>
+  <script>
+
+    function daysRemaining(expires) {
+      if (!expires || expires === 'lifetime') return null;
+      const diff = new Date(expires) - new Date();
+      return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+    }
+
+    function renderProfile() {
+      const user = Auth.getCurrentUser();
+      if (!user) return;
+
+      const active = Auth.isSubscriptionActive(user);
+      const avatar = document.getElementById('profileAvatar');
+      avatar.textContent = Auth.getInitials(user.username);
+      avatar.style.background = `linear-gradient(135deg, ${Auth.avatarColor(user.username)}, var(--accent))`;
+
+      document.getElementById('profileUsername').textContent = user.username;
+      document.getElementById('fieldUsername').textContent = user.username;
+      document.getElementById('fieldEmail').textContent = user.email;
+
+      const created = new Date(user.createdAt);
+      document.getElementById('profileSince').textContent =
+        'С нами с ' + created.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+
+      const planLabel = user.subscriptionPlan ? Auth.planLabel(user.subscriptionPlan) : 'Не куплен';
+      document.getElementById('statPlan').textContent = planLabel;
+
+      const expiresEl = document.getElementById('fieldExpires');
+      expiresEl.textContent = Auth.formatExpiry(user);
+
+      const statusEl = document.getElementById('profileStatus');
+      const statusText = document.getElementById('statusText');
+      const licenseHero = document.getElementById('licenseHero');
+      const licenseValue = document.getElementById('licenseValue');
+      const licenseSub = document.getElementById('licenseSub');
+      const licenseLabel = document.getElementById('licenseLabel');
+      const licenseIcon = document.getElementById('licenseIcon');
+      const progressWrap = document.getElementById('licenseProgressWrap');
+      const buyBtn = document.getElementById('profileBuyBtn');
+      const downloadCard = document.getElementById('downloadFileCard');
+      const downloadHint = document.getElementById('downloadHint');
+
+      if (active) {
+        statusEl.className = 'profile-status profile-status--active';
+        statusText.textContent = user.subscriptionExpires === 'lifetime' ? 'Навсегда' : 'Активна';
+        expiresEl.classList.add('field-value--green');
+        licenseHero.classList.add('profile-license-hero--active');
+        licenseHero.classList.remove('profile-license-hero--inactive');
+
+        if (user.subscriptionExpires === 'lifetime') {
+          licenseValue.textContent = 'Навсегда';
+          licenseSub.textContent = 'Бессрочный доступ ко всем модулям';
+          progressWrap.classList.add('hidden');
+        } else {
+          const days = daysRemaining(user.subscriptionExpires);
+          licenseValue.textContent = planLabel;
+          licenseSub.textContent = 'Действует до ' + Auth.formatExpiry(user);
+          progressWrap.classList.remove('hidden');
+          document.getElementById('licenseProgressDays').textContent = days + ' дн.';
+          const total = user.subscriptionPlan === '6m' ? 180 : 30;
+          const pct = Math.min(100, (days / total) * 100);
+          document.getElementById('licenseProgressFill').style.width = pct + '%';
+        }
+
+        licenseIcon.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>';
+        buyBtn.textContent = 'Продлить подписку';
+        buyBtn.className = 'btn btn--ghost';
+        downloadCard.classList.remove('download-file-card--locked');
+        downloadHint.textContent = 'Скачайте мод, запустите Minecraft и войдите тем же логином в окне активации.';
+      } else {
+        statusEl.className = 'profile-status profile-status--inactive';
+        statusText.textContent = 'Не активна';
+        expiresEl.classList.remove('field-value--green');
+        licenseHero.classList.add('profile-license-hero--inactive');
+        licenseHero.classList.remove('profile-license-hero--active');
+        licenseValue.textContent = 'Не активна';
+        licenseSub.textContent = 'Купите подписку для доступа к модулям';
+        progressWrap.classList.add('hidden');
+        licenseIcon.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+        buyBtn.textContent = 'Купить подписку';
+        buyBtn.className = 'btn btn--primary';
+        downloadCard.classList.add('download-file-card--locked');
+        downloadHint.textContent = 'Скачивание доступно только при активной подписке.';
+      }
+
+      const hwidEl = document.getElementById('fieldHwid');
+      if (user.hwid) {
+        hwidEl.textContent = user.hwid;
+        hwidEl.classList.remove('field-value--mute');
+      } else {
+        hwidEl.textContent = 'Не привязан';
+        hwidEl.classList.add('field-value--mute');
+      }
+
+      const dlBtn = document.getElementById('downloadModBtn');
+      dlBtn.disabled = !active;
+      if (active) {
+        dlBtn.onclick = async () => {
+          dlBtn.disabled = true;
+          const result = await Auth.downloadMod();
+          dlBtn.disabled = false;
+          if (!result.ok) {
+            Auth.showToast(result.error, 'error');
+            return;
+          }
+          Auth.showToast('Скачивание началось');
+        };
+      }
+    }
+
+    (async () => {
+      if (!(await Auth.requireAuth())) return;
+      Auth.injectAdminNav();
+      renderProfile();
+    })();
+  </script>
+</body>
+</html>

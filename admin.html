@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель — VoltVisuals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%238187FF'/><path d='M18 6L10 18h5l-1 8 8-12h-5l1-8z' fill='white'/></svg>">
+</head>
+<body class="admin-page">
+  <div class="bg-mesh"></div>
+  <div class="bg-orb bg-orb--1"></div>
+  <div class="bg-orb bg-orb--2"></div>
+  <div class="bg-noise"></div>
+
+  <header class="admin-header">
+    <div class="container admin-header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L7 14h4l-1 8 7-11h-4l1-9z" fill="white"/></svg>
+        </span>
+        <span class="logo-text">Volt<span class="logo-accent">Visuals</span></span>
+      </a>
+      <div class="admin-header-right">
+        <span class="admin-badge">Admin</span>
+        <span class="admin-user-name" id="adminUserName">—</span>
+        <button class="btn btn--ghost btn--sm" id="adminLogoutBtn">Выйти</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-main container">
+    <div class="admin-title-row">
+      <div>
+        <h1 class="admin-title">Панель управления</h1>
+        <p class="admin-subtitle">Пользователи, подписки и HWID</p>
+      </div>
+      <button class="btn btn--ghost btn--sm" id="refreshBtn">Обновить</button>
+    </div>
+
+    <div class="admin-stats" id="adminStats">
+      <div class="admin-stat-card">
+        <span class="admin-stat-val" id="statTotal">—</span>
+        <span class="admin-stat-lbl">Пользователей</span>
+      </div>
+      <div class="admin-stat-card admin-stat-card--green">
+        <span class="admin-stat-val" id="statActive">—</span>
+        <span class="admin-stat-lbl">Активных подписок</span>
+      </div>
+      <div class="admin-stat-card admin-stat-card--red">
+        <span class="admin-stat-val" id="statBanned">—</span>
+        <span class="admin-stat-lbl">Заблокировано</span>
+      </div>
+    </div>
+
+    <section class="admin-section">
+      <div class="admin-title-row">
+        <div>
+          <h2 class="admin-section-title">Ключи активации</h2>
+          <p class="admin-subtitle">HMAC-подписанные коды — подделать нельзя</p>
+        </div>
+        <div class="admin-key-gen">
+          <select id="keyPlanSelect" class="admin-select admin-select--inline">
+            <option value="30d">30 дней</option>
+            <option value="6m">6 месяцев</option>
+            <option value="lifetime">Навсегда</option>
+          </select>
+          <button class="btn btn--primary btn--sm" id="generateKeyBtn">Сгенерировать</button>
+        </div>
+      </div>
+      <div class="admin-key-result hidden" id="keyResult">
+        <code id="generatedKey">—</code>
+        <button class="btn btn--ghost btn--sm" id="copyKeyBtn">Копировать</button>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Тариф</th>
+              <th>Создан</th>
+              <th>Статус</th>
+              <th>Использован</th>
+              <th>Кем</th>
+            </tr>
+          </thead>
+          <tbody id="keysTableBody">
+            <tr><td colspan="5" class="admin-empty">Загрузка…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <h2 class="admin-section-title">Пользователи</h2>
+      <div class="admin-toolbar">
+        <input type="search" class="admin-search" id="userSearch" placeholder="Поиск по нику или email…">
+      </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Ник</th>
+            <th>Email</th>
+            <th>Тариф</th>
+            <th>До</th>
+            <th>HWID</th>
+            <th>Регистрация</th>
+            <th>Статус</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+          <tr><td colspan="8" class="admin-empty">Загрузка…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    </section>
+  </main>
+
+  <div class="modal hidden" id="editModal">
+    <div class="modal-backdrop" id="editBackdrop"></div>
+    <div class="modal-card modal-card--wide">
+      <button class="modal-close" id="editClose" aria-label="Закрыть">&times;</button>
+      <h2 id="editTitle">Редактировать пользователя</h2>
+      <p class="modal-desc" id="editSubtitle">—</p>
+
+      <div class="admin-edit-form">
+        <div class="form-group">
+          <label for="editPlan">Тариф</label>
+          <select id="editPlan" class="admin-select">
+            <option value="">Нет подписки</option>
+            <option value="30d">30 дней</option>
+            <option value="6m">6 месяцев</option>
+            <option value="lifetime">Навсегда</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editExpires">Действует до (ISO или lifetime)</label>
+          <input type="text" id="editExpires" class="admin-input" placeholder="2026-12-31 или lifetime">
+        </div>
+        <div class="form-group">
+          <label for="editHwid">HWID</label>
+          <input type="text" id="editHwid" class="admin-input" placeholder="Не привязан">
+        </div>
+        <label class="admin-check">
+          <input type="checkbox" id="editBanned">
+          <span>Заблокировать аккаунт</span>
+        </label>
+      </div>
+
+      <div class="admin-edit-actions">
+        <button class="btn btn--primary" id="saveUserBtn">Сохранить</button>
+        <button class="btn btn--ghost" id="resetHwidBtn">Сбросить HWID</button>
+        <button class="btn btn--ghost admin-btn-danger" id="deleteUserBtn">Удалить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Купить мод — VoltVisuals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%238187FF'/><path d='M18 6L10 18h5l-1 8 8-12h-5l1-8z' fill='white'/></svg>">
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <div class="bg-orb bg-orb--1"></div>
+  <div class="bg-orb bg-orb--2"></div>
+  <div class="bg-noise"></div>
+
+  <header class="header scrolled" id="header">
+    <nav class="nav container">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L7 14h4l-1 8 7-11h-4l1-9z" fill="white"/></svg>
+        </span>
+        <span class="logo-text">Volt<span class="logo-accent">Visuals</span></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html#benefits">Преимущества</a></li>
+        <li><a href="buy.html" class="nav-active">Купить</a></li>
+        <li><a href="profile.html" id="profileNavLink">Профиль</a></li>
+      </ul>
+      <div class="nav-auth">
+        <div id="navGuest" class="nav-guest">
+          <a href="login.html?redirect=buy.html" class="btn btn--ghost btn--sm">Вход</a>
+          <a href="register.html" class="btn btn--primary btn--sm">Регистрация</a>
+        </div>
+        <div id="navUser" class="nav-user hidden">
+          <a href="profile.html" class="nav-profile-link">
+            <span class="nav-avatar" id="navAvatar"></span>
+            <span id="navUsername"></span>
+          </a>
+          <a href="#" class="btn btn--ghost btn--sm" id="logoutBtn">Выйти</a>
+        </div>
+      </div>
+      <button class="nav-burger" id="navBurger" aria-label="Меню"><span></span><span></span><span></span></button>
+    </nav>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="index.html">Главная</a>
+      <a href="buy.html">Купить</a>
+      <a href="profile.html">Профиль</a>
+      <div id="mobileGuest"><a href="login.html">Вход</a><a href="register.html">Регистрация</a></div>
+      <div id="mobileUser" class="hidden">
+        <div class="mobile-user-info"><span class="nav-avatar" id="mobileNavAvatar"></span><span id="mobileNavUsername"></span></div>
+        <a href="#" id="mobileLogoutBtn">Выйти</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-main">
+    <div class="container">
+      <div class="promo-banner">
+        <span class="promo-icon">✦</span>
+        <div>
+          <strong>СКИДКА В ЧЕСТЬ ОБНОВЛЕНИЯ v1.6.1!</strong>
+          <span>Специальные цены на все тарифы — 34 модуля, 5 тем, новый интерфейс</span>
+        </div>
+      </div>
+
+      <div class="page-header page-header--center">
+        <span class="section-tag">Тарифы</span>
+        <h1 class="page-title">Купить VoltVisuals</h1>
+        <p class="section-desc">Выбери подходящий тариф и получи доступ ко всем 34 модулям клиента</p>
+      </div>
+
+      <div class="pricing-grid">
+        <article class="pricing-card" data-plan="30d">
+          <div class="pricing-header">
+            <h3>30 дней</h3>
+            <p class="pricing-desc">Попробуй клиент на месяц</p>
+          </div>
+          <div class="pricing-price">
+            <span class="price-value">150</span>
+            <span class="price-currency">₽</span>
+          </div>
+          <ul class="pricing-features">
+            <li>Все 34 модуля</li>
+            <li>Click GUI & Interface HUD</li>
+            <li>5 тем оформления</li>
+            <li>Обновления на период</li>
+            <li>Поддержка в Discord</li>
+          </ul>
+          <button class="btn btn--ghost btn--full buy-btn" data-plan="30d">Купить</button>
+        </article>
+
+        <article class="pricing-card pricing-card--featured" data-plan="6m">
+          <div class="pricing-badge">Выгодно</div>
+          <div class="pricing-header">
+            <h3>6 месяцев</h3>
+            <p class="pricing-desc">Лучший баланс цены и срока</p>
+          </div>
+          <div class="pricing-price">
+            <span class="price-value">250</span>
+            <span class="price-currency">₽</span>
+          </div>
+          <ul class="pricing-features">
+            <li>Всё из тарифа 30 дней</li>
+            <li>Экономия ~42 ₽/мес</li>
+            <li>Приоритет в поддержке</li>
+            <li>Ранний доступ к обновлениям</li>
+          </ul>
+          <button class="btn btn--primary btn--full buy-btn" data-plan="6m">Купить</button>
+        </article>
+
+        <article class="pricing-card pricing-card--lifetime" data-plan="lifetime">
+          <div class="pricing-badge pricing-badge--launch">Скидка</div>
+          <div class="pricing-header">
+            <h3>Навсегда</h3>
+            <p class="pricing-desc">Разовая покупка — навсегда твой</p>
+          </div>
+          <div class="pricing-price">
+            <span class="price-value">399</span>
+            <span class="price-currency">₽</span>
+          </div>
+          <ul class="pricing-features">
+            <li>Бессрочный доступ</li>
+            <li>Все будущие обновления</li>
+            <li>HWID-привязка 1 ПК</li>
+            <li>VIP-роль в Discord</li>
+          </ul>
+          <button class="btn btn--primary btn--full buy-btn" data-plan="lifetime">Купить навсегда</button>
+        </article>
+      </div>
+
+      <div class="buy-note">
+        <p>Оплатите через Telegram Stars или FunPay, получите код от продавца и активируйте его в личном кабинете.</p>
+        <p>Нет аккаунта? <a href="register.html">Зарегистрируйся</a> перед покупкой.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-bottom container">
+      <p>© 2026 VoltVisuals. Не аффилирован с Mojang AB.</p>
+    </div>
+  </footer>
+
+  <div class="modal hidden" id="payModal">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-card modal-card--pay">
+      <button class="modal-close" id="modalClose" aria-label="Закрыть">&times;</button>
+      <h2 id="modalTitle">Оплата тарифа</h2>
+      <p class="modal-desc" id="modalDesc">—</p>
+      <div class="modal-price" id="modalPrice">—</div>
+
+      <p class="pay-step-label">1. Выберите способ оплаты</p>
+      <div class="pay-methods">
+        <a href="https://t.me/Mizantrophya" target="_blank" rel="noopener" class="pay-method" id="payTelegram">
+          <span class="pay-method-icon pay-method-icon--tg">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+          </span>
+          <span class="pay-method-body">
+            <strong>Telegram Stars</strong>
+            <span>Оплата звёздами → @Mizantrophya</span>
+          </span>
+        </a>
+        <a href="https://funpay.com/" target="_blank" rel="noopener" class="pay-method" id="payFunpay">
+          <span class="pay-method-icon pay-method-icon--fp">
+            <svg viewBox="0 0 24 24" width="28" height="28"><rect width="24" height="24" rx="6" fill="#FF6B00"/><text x="12" y="16.5" text-anchor="middle" fill="white" font-size="11" font-weight="700" font-family="Inter,sans-serif">FP</text></svg>
+          </span>
+          <span class="pay-method-body">
+            <strong>FunPay</strong>
+            <span>Оплата на funpay.com</span>
+          </span>
+        </a>
+      </div>
+
+      <p class="pay-step-label">2. Введите код активации</p>
+      <input type="text" class="pay-code-input" id="activationCode" placeholder="VV-30D-XXXXXXXXXXXX-XXXXXXXX" autocomplete="off" spellcheck="false">
+      <p class="modal-hint">Код выдаётся после оплаты. Подделать его нельзя — проверяется подпись сервера.</p>
+      <button class="btn btn--primary btn--lg btn--full" id="redeemCodeBtn">Активировать код</button>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script>
+    (async () => {
+      await Auth.init();
+      let selectedPlan = null;
+
+      document.querySelectorAll('.buy-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedPlan = btn.dataset.plan;
+          const plan = Auth.PLANS[selectedPlan];
+          const user = Auth.getCurrentUser();
+
+          if (!user) {
+            window.location.href = 'login.html?redirect=buy.html';
+            return;
+          }
+
+          document.getElementById('modalTitle').textContent = 'Тариф «' + plan.label + '»';
+          document.getElementById('modalDesc').textContent = plan.desc;
+          document.getElementById('modalPrice').textContent = plan.price + ' ₽';
+          document.getElementById('activationCode').value = '';
+          document.getElementById('payModal').classList.remove('hidden');
+        });
+      });
+
+      function closeModal() {
+        document.getElementById('payModal').classList.add('hidden');
+        selectedPlan = null;
+      }
+
+      document.getElementById('modalClose').addEventListener('click', closeModal);
+      document.getElementById('modalBackdrop').addEventListener('click', closeModal);
+
+      document.getElementById('redeemCodeBtn').addEventListener('click', async () => {
+        if (!selectedPlan) return;
+        const code = document.getElementById('activationCode').value.trim();
+        if (!code) {
+          Auth.showToast('Введите код активации', 'error');
+          return;
+        }
+        const btn = document.getElementById('redeemCodeBtn');
+        btn.disabled = true;
+        const result = await Auth.redeemCode(code, selectedPlan);
+        btn.disabled = false;
+        if (!result.ok) {
+          Auth.showToast(result.error, 'error');
+          return;
+        }
+        closeModal();
+        Auth.showToast('Подписка активирована! Переходим в профиль…');
+        setTimeout(() => { window.location.href = 'profile.html'; }, 1500);
+      });
+
+      const profileLink = document.getElementById('profileNavLink');
+      if (!Auth.getCurrentUser()) {
+        profileLink.href = 'login.html?redirect=profile.html';
+      }
+    })();
+  </script>
+</body>
+</html>

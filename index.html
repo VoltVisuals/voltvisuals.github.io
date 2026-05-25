@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoltVisuals — Премиальный клиент для Minecraft</title>
+  <meta name="description" content="VoltVisuals — премиальный Fabric-клиент для Minecraft 1.20.1. 34 модуля, кастомный HUD, темы и оптимизация.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%238187FF'/><path d='M18 6L10 18h5l-1 8 8-12h-5l1-8z' fill='white'/></svg>">
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <div class="bg-orb bg-orb--1"></div>
+  <div class="bg-orb bg-orb--2"></div>
+  <div class="bg-noise"></div>
+
+  <header class="header" id="header">
+    <nav class="nav container">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L7 14h4l-1 8 7-11h-4l1-9z" fill="white"/></svg>
+        </span>
+        <span class="logo-text">Volt<span class="logo-accent">Visuals</span></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#benefits">Преимущества</a></li>
+        <li><a href="#modules">Модули</a></li>
+        <li><a href="#themes">Темы</a></li>
+        <li><a href="buy.html">Купить</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div class="nav-auth">
+        <div id="navGuest" class="nav-guest">
+          <a href="login.html" class="btn btn--ghost btn--sm">Вход</a>
+          <a href="register.html" class="btn btn--primary btn--sm">Регистрация</a>
+        </div>
+        <div id="navUser" class="nav-user hidden">
+          <a href="profile.html" class="nav-profile-link">
+            <span class="nav-avatar" id="navAvatar"></span>
+            <span id="navUsername"></span>
+          </a>
+          <a href="#" class="btn btn--ghost btn--sm" id="logoutBtn">Выйти</a>
+        </div>
+      </div>
+      <button class="nav-burger" id="navBurger" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#benefits">Преимущества</a>
+      <a href="#modules">Модули</a>
+      <a href="#themes">Темы</a>
+      <a href="buy.html">Купить</a>
+      <a href="#faq">FAQ</a>
+      <div id="mobileGuest">
+        <a href="login.html">Вход</a>
+        <a href="register.html">Регистрация</a>
+      </div>
+      <div id="mobileUser" class="hidden">
+        <div class="mobile-user-info">
+          <span class="nav-avatar" id="mobileNavAvatar"></span>
+          <span id="mobileNavUsername"></span>
+        </div>
+        <a href="profile.html">Профиль</a>
+        <a href="#" id="mobileLogoutBtn">Выйти</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            Fabric 1.20.1 · v1.6.1
+          </div>
+          <h1 class="hero-title">
+            Лучший мод для<br>
+            <span class="gradient-text">комфортной</span> игры
+          </h1>
+          <p class="hero-desc">
+            VoltVisuals создан для тех, кто ценит стиль, удобство и максимальную производительность.
+            Плавный геймплей, продуманный интерфейс и 34 модуля — всё в одном клиенте.
+          </p>
+          <div class="hero-actions">
+            <a href="buy.html" class="btn btn--primary btn--lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+              Купить мод
+            </a>
+            <a href="#modules" class="btn btn--ghost btn--lg">Смотреть модули</a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat-card">
+              <span class="stat-value" data-count="34">0</span>
+              <span class="stat-label">модуля</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" data-count="5">0</span>
+              <span class="stat-label">категорий</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" data-count="5">0</span>
+              <span class="stat-label">тем оформления</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="gui-mockup" id="guiMockup">
+            <div class="gui-panel">
+              <div class="gui-panel-bg"></div>
+
+              <div class="gui-topbar">
+                <span class="gui-brand">VoltVisuals</span>
+                <span class="gui-cat-title" id="guiCatTitle">Combat</span>
+                <div class="gui-topbar-right">
+                  <div class="gui-lang-pill">RU</div>
+                  <div class="gui-search-pill">
+                    <span>Search</span>
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="gui-body">
+                <div class="gui-categories">
+                  <button class="gui-cat-tab active" data-tab="combat">
+                    <svg class="gui-cat-icon" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1l1 3h3l-2.5 2 1 3L6 7 3.5 9l1-3L2 4h3z"/></svg>
+                    Combat
+                  </button>
+                  <button class="gui-cat-tab" data-tab="movement">
+                    <svg class="gui-cat-icon" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1v10M3 4l3-3 3 3M3 8l3 3 3-3"/></svg>
+                    Movement
+                  </button>
+                  <button class="gui-cat-tab" data-tab="player">
+                    <svg class="gui-cat-icon" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="3.5" r="2"/><path d="M2 11c0-2.2 1.8-4 4-4s4 1.8 4 4"/></svg>
+                    Player
+                  </button>
+                  <button class="gui-cat-tab" data-tab="render">
+                    <svg class="gui-cat-icon" viewBox="0 0 12 12" fill="currentColor"><path d="M1 6s2-4 5-4 5 4 5 4-2 4-5 4-5-4-5-4z"/><circle cx="6" cy="6" r="1.5" fill="#080910"/></svg>
+                    Render
+                  </button>
+                  <button class="gui-cat-tab" data-tab="misc">
+                    <svg class="gui-cat-icon" viewBox="0 0 12 12" fill="currentColor"><circle cx="3" cy="6" r="1.2"/><circle cx="6" cy="6" r="1.2"/><circle cx="9" cy="6" r="1.2"/></svg>
+                    Misc
+                  </button>
+                </div>
+
+                <div class="gui-modules-area">
+                  <div class="gui-modules-grid" id="guiModules"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="gui-userbar">
+              <div class="gui-user-avatar">
+                <span class="gui-user-avatar-inner"></span>
+                <span class="gui-user-status"></span>
+              </div>
+              <div class="gui-user-info">
+                <span class="gui-user-name">Player</span>
+                <span class="gui-user-date">25.05.2026</span>
+              </div>
+              <div class="gui-user-actions">
+                <button class="gui-user-btn" aria-label="Темы">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.7-.1 2.5-.3-.6-.7-1-1.6-1-2.7 0-2.2 1.8-4 4-4 .7 0 1.4.2 2 .5 1.1-1.2 1.8-2.8 1.8-4.5 0-3.9-3.1-7-7-7z"/></svg>
+                </button>
+                <button class="gui-user-btn" aria-label="Настройки">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Benefits (Pulse-style) -->
+    <section class="section" id="benefits">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Преимущества</span>
+          <h2 class="section-title">Всё для комфортной игры</h2>
+          <p class="section-desc">Мощный набор функций, который выводит комфорт и стиль игры на новый уровень — без компромиссов.</p>
+        </div>
+        <div class="benefits-grid">
+          <article class="benefit-card">
+            <div class="benefit-icon">✦</div>
+            <h3>Дизайн</h3>
+            <p>Элегантный минималистичный интерфейс с градиентами, 5 темами оформления и плавными анимациями — как в клиенте.</p>
+          </article>
+          <article class="benefit-card">
+            <div class="benefit-icon">⚡</div>
+            <h3>Производительность</h3>
+            <p>ClearRender, Ambience и оптимизированный код позволяют достичь высокого FPS даже на слабых компьютерах.</p>
+          </article>
+          <article class="benefit-card">
+            <div class="benefit-icon">⚙</div>
+            <h3>Гибкость</h3>
+            <p>34 модуля с детальными настройками. Каждый параметр настраивается через удобный Click GUI с поиском.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section section--alt" id="features">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Возможности</span>
+          <h2 class="section-title">Играй по-своему</h2>
+          <p class="section-desc">Combat, визуалы, HUD, автоматизация — всё что нужно для комфортной игры на любых серверах.</p>
+        </div>
+        <div class="features-grid">
+          <article class="feature-card">
+            <div class="feature-icon">⚔</div>
+            <h3>PvP & Combat</h3>
+            <p>TapeMouse, FastClick, TotemPop и Fast Exp — инструменты для боя на серверах и в мини-играх.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">◎</div>
+            <h3>Render & Visuals</h3>
+            <p>TargetESP, HitParticles, DamageNumbers, Particles и KillEffect — визуалы нового поколения.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">▣</div>
+            <h3>Interface & HUD</h3>
+            <p>Ватермарк, горячие клавиши, эффекты, Target HUD — вся информация на одном экране.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">↗</div>
+            <h3>Movement</h3>
+            <p>AutoSprint, ElytraHelper и Twerk — удобное управление движением и элитрами.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">♦</div>
+            <h3>Player</h3>
+            <p>AntiAFK, AutoEat, AutoRespawn и Fishing — автоматизация рутинных действий.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">◈</div>
+            <h3>Misc & Utility</h3>
+            <p>AuctionHelper, ChatHelper, ArmorNotifier и Notifications — полезные утилиты для серверов.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Themes -->
+    <section class="section themes-section" id="themes">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Темы</span>
+          <h2 class="section-title">Выбери свой стиль</h2>
+          <p class="section-desc">5 готовых тем оформления — от фирменного VoltVisuals до Emerald, Ruby, Ocean и Gold.</p>
+        </div>
+        <div class="themes-grid">
+          <div class="theme-preview-card theme-preview-card--active" data-theme="volt">
+            <div class="theme-swatch" style="background: linear-gradient(135deg, #8187FF, #4D5199)"></div>
+            <span>VoltVisuals</span>
+          </div>
+          <div class="theme-preview-card" data-theme="emerald">
+            <div class="theme-swatch" style="background: linear-gradient(135deg, #26C68C, #1A8F63)"></div>
+            <span>Emerald</span>
+          </div>
+          <div class="theme-preview-card" data-theme="ruby">
+            <div class="theme-swatch" style="background: linear-gradient(135deg, #FF5C7A, #B8324F)"></div>
+            <span>Ruby</span>
+          </div>
+          <div class="theme-preview-card" data-theme="ocean">
+            <div class="theme-swatch" style="background: linear-gradient(135deg, #5CB8FF, #3278B8)"></div>
+            <span>Ocean</span>
+          </div>
+          <div class="theme-preview-card" data-theme="gold">
+            <div class="theme-swatch" style="background: linear-gradient(135deg, #FFD166, #B8860B)"></div>
+            <span>Gold</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modules -->
+    <section class="section section--alt" id="modules">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Модули</span>
+          <h2 class="section-title">34 модуля в 5 категориях</h2>
+          <p class="section-desc">Кликай на модуль — смотри описание. Чекбоксы работают как в клиенте.</p>
+        </div>
+
+        <div class="module-detail-panel module-detail-panel--section hidden" id="moduleDetailSection"></div>
+
+        <div class="module-tabs">
+          <button class="module-tab active" data-category="combat">Combat</button>
+          <button class="module-tab" data-category="movement">Movement</button>
+          <button class="module-tab" data-category="player">Player</button>
+          <button class="module-tab" data-category="render">Render</button>
+          <button class="module-tab" data-category="misc">Misc</button>
+        </div>
+
+        <div class="modules-grid" id="modulesGrid"></div>
+      </div>
+    </section>
+
+    <!-- Interface showcase -->
+    <section class="section" id="interface">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Интерфейс</span>
+          <h2 class="section-title">Стиль, который чувствуется</h2>
+          <p class="section-desc">Каждый элемент интерфейса VoltVisuals продуман — от палитры #8187FF до анимаций чекбоксов.</p>
+        </div>
+
+        <div class="showcase">
+          <div class="showcase-item">
+            <div class="showcase-preview showcase-preview--gui">
+              <div class="sc-gui">
+                <div class="sc-gui-top">
+                  <span class="sc-gui-brand">VoltVisuals</span>
+                  <span class="sc-gui-cat">Combat</span>
+                  <div class="sc-gui-top-right">
+                    <span class="sc-lang">RU</span>
+                    <span class="sc-search">Search <svg width="6" height="6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg></span>
+                  </div>
+                </div>
+                <div class="sc-gui-body">
+                  <div class="sc-cats">
+                    <div class="sc-cat active"><span class="sc-cat-dot"></span>Combat</div>
+                    <div class="sc-cat"><span class="sc-cat-dot"></span>Movement</div>
+                    <div class="sc-cat"><span class="sc-cat-dot"></span>Player</div>
+                    <div class="sc-cat"><span class="sc-cat-dot"></span>Render</div>
+                    <div class="sc-cat"><span class="sc-cat-dot"></span>Misc</div>
+                  </div>
+                  <div class="sc-cards">
+                    <div class="sc-card">
+                      <div class="sc-card-head"><span class="sc-card-ico"></span>TapeMouse<span class="sc-bind">NONE</span></div>
+                      <div class="sc-card-body">
+                        <div class="sc-toggle-row"><span>Включить</span><div class="sc-check on"></div></div>
+                        <p>Автоматические клики с настраиваемой скоростью</p>
+                      </div>
+                    </div>
+                    <div class="sc-card">
+                      <div class="sc-card-head"><span class="sc-card-ico"></span>Fast Exp<span class="sc-bind">NONE</span></div>
+                      <div class="sc-card-body">
+                        <div class="sc-toggle-row"><span>Включить</span><div class="sc-check"></div></div>
+                        <p>Ускоряет бросок бутылочек опыта</p>
+                      </div>
+                    </div>
+                    <div class="sc-card">
+                      <div class="sc-card-head"><span class="sc-card-ico"></span>TotemPop<span class="sc-bind">NONE</span></div>
+                      <div class="sc-card-body">
+                        <div class="sc-toggle-row"><span>Включить</span><div class="sc-check"></div></div>
+                        <p>Голограмма при сбитии талисмана</p>
+                      </div>
+                    </div>
+                    <div class="sc-card">
+                      <div class="sc-card-head"><span class="sc-card-ico"></span>FastClick<span class="sc-bind">NONE</span></div>
+                      <div class="sc-card-body">
+                        <div class="sc-toggle-row"><span>Включить</span><div class="sc-check"></div></div>
+                        <p>Снижает задержку между кликами</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="sc-gui-user">
+                  <span class="sc-user-av"></span>
+                  <span class="sc-user-name">Player</span>
+                  <span class="sc-user-date">25.05.2026</span>
+                </div>
+              </div>
+            </div>
+            <h3>Click GUI</h3>
+            <p>Right Shift — категории слева, модули в 2 колонки, поиск и профиль снизу.</p>
+          </div>
+
+          <div class="showcase-item">
+            <div class="showcase-preview showcase-preview--hud">
+              <div class="sc-hud-scene">
+                <div class="sc-watermark">
+                  <span class="sc-wm-icon"></span>
+                  <span class="sc-wm-name">Player</span>
+                  <span class="sc-wm-ping">24 ms</span>
+                  <span class="sc-wm-fps">168 fps</span>
+                </div>
+                <div class="sc-hotkeys">
+                  <div class="sc-hotkeys-head">
+                    <span>HotKeys</span>
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg>
+                  </div>
+                  <div class="sc-hotkeys-row"><span>TapeMouse</span><span class="sc-key">V</span></div>
+                  <div class="sc-hotkeys-row"><span>AutoSprint</span><span class="sc-key">B</span></div>
+                  <div class="sc-hotkeys-row"><span>ElytraHelper</span><span class="sc-key">G</span></div>
+                </div>
+                <div class="sc-targethud">
+                  <div class="sc-target-avatar"></div>
+                  <div class="sc-target-info">
+                    <span class="sc-target-name">Player_123</span>
+                    <span class="sc-target-meta">HP 13.0 • 4.2m</span>
+                    <div class="sc-target-bar"><div class="sc-target-fill" style="width:65%"></div></div>
+                    <div class="sc-target-armor"><span></span><span></span><span></span><span></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <h3>Interface HUD</h3>
+            <p>Ватермарк с FPS и пингом, HotKeys, Target HUD с HP-баром и бронёй.</p>
+          </div>
+
+          <div class="showcase-item">
+            <div class="showcase-preview showcase-preview--notify">
+              <div class="sc-notify-stack">
+                <div class="sc-notify">
+                  <span class="sc-notify-accent sc-notify-accent--on"></span>
+                  <div class="sc-notify-text">
+                    <span class="sc-notify-title">AutoSprint</span>
+                    <span class="sc-notify-status sc-notify-status--on">Enabled</span>
+                  </div>
+                </div>
+                <div class="sc-notify">
+                  <span class="sc-notify-accent sc-notify-accent--off"></span>
+                  <div class="sc-notify-text">
+                    <span class="sc-notify-title">Ambience</span>
+                    <span class="sc-notify-status sc-notify-status--off">Disabled</span>
+                  </div>
+                </div>
+                <div class="sc-notify">
+                  <span class="sc-notify-accent sc-notify-accent--on"></span>
+                  <div class="sc-notify-text">
+                    <span class="sc-notify-title">TotemPop</span>
+                    <span class="sc-notify-status sc-notify-status--on">Enabled</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <h3>Уведомления</h3>
+            <p>Всплывают снизу справа при вкл/выкл модулей — как в NotificationManager.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section section--cta" id="download">
+      <div class="container">
+        <div class="cta-card">
+          <div class="cta-content">
+            <span class="section-tag">Скачать</span>
+            <h2 class="cta-title">Готов играть с VoltVisuals?</h2>
+            <p class="cta-desc">
+              Клиент для Minecraft 1.20.1 на Fabric. Установи Fabric Loader, купи подписку и скачай мод из профиля.
+            </p>
+            <ul class="cta-requirements">
+              <li>Minecraft 1.20.1</li>
+              <li>Fabric Loader 0.15+</li>
+              <li>Java 17+</li>
+              <li>Fabric API</li>
+            </ul>
+            <div class="cta-actions">
+              <a href="buy.html" class="btn btn--primary btn--lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+                Купить от 150 ₽
+              </a>
+              <a href="profile.html" class="btn btn--ghost btn--lg" id="profileCtaLink">Мой профиль</a>
+              <a href="#" class="btn btn--outline btn--lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                Discord
+              </a>
+            </div>
+          </div>
+          <div class="cta-visual">
+            <div class="cta-logo">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L7 14h4l-1 8 7-11h-4l1-9z" fill="white"/></svg>
+            </div>
+            <div class="volt-rings">
+              <div class="ring ring--1"></div>
+              <div class="ring ring--2"></div>
+              <div class="ring ring--3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <div class="container container--narrow">
+        <div class="section-header">
+          <span class="section-tag">FAQ</span>
+          <h2 class="section-title">Частые вопросы</h2>
+        </div>
+        <div class="faq-list" id="faqList">
+          <details class="faq-item" open>
+            <summary>Как установить VoltVisuals?</summary>
+            <p>Установите Fabric Loader для Minecraft 1.20.1, скачайте Fabric API и файл voltvisuals-1.6.1.jar из профиля. Поместите оба .jar файла в папку mods и запустите игру.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Как открыть меню клиента?</summary>
+            <p>Нажмите Right Shift (правый Shift) в игре. Откроется Click GUI с категориями модулей и поиском.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Какие модули есть в новой версии?</summary>
+            <p>В v1.6.1 доступно 34 модуля в 5 категориях: Combat, Movement, Player, Render и Misc. Среди новинок — DamageNumbers, HitParticles, KillEffect, ShulkerPreview и другие.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Можно ли сменить тему оформления?</summary>
+            <p>Да. В клиенте доступно 5 тем: VoltVisuals, Emerald, Ruby, Ocean и Gold. Настройки сохраняются между сессиями.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Сколько стоит VoltVisuals?</summary>
+            <p>30 дней — 150 ₽, 6 месяцев — 250 ₽, навсегда — 399 ₽. Купить можно на странице <a href="buy.html">«Купить»</a>.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <span class="logo-mark">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L7 14h4l-1 8 7-11h-4l1-9z" fill="white"/></svg>
+          </span>
+          <span class="logo-text">Volt<span class="logo-accent">Visuals</span></span>
+        </a>
+        <p class="footer-tagline">Premium Fabric client for Minecraft 1.20.1 · v1.6.1</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Навигация</h4>
+          <a href="#benefits">Преимущества</a>
+          <a href="#modules">Модули</a>
+          <a href="buy.html">Купить</a>
+          <a href="profile.html">Профиль</a>
+        </div>
+        <div class="footer-col">
+          <h4>Сообщество</h4>
+          <a href="#">Discord</a>
+          <a href="#">Telegram</a>
+        </div>
+        <div class="footer-col">
+          <h4>Инфо</h4>
+          <a href="#faq">FAQ</a>
+          <a href="#">Политика</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom container">
+      <p>© 2026 VoltVisuals. Не аффилирован с Mojang AB.</p>
+    </div>
+  </footer>
+
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    Auth.init().then(() => {
+      const profileCta = document.getElementById('profileCtaLink');
+      if (profileCta && !Auth.getCurrentUser()) {
+        profileCta.href = 'login.html?redirect=profile.html';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — VoltVisuals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%238187FF'/><path d='M18 6L10 18h5l-1 8 8-12h-5l1-8z' fill='white'/></svg>">
+</head>
+<body class="auth-page">
+  <div class="bg-mesh"></div>
+  <div class="bg-orb bg-orb--1"></div>
+  <div class="bg-orb bg-orb--2"></div>
+  <div class="bg-noise"></div>
+
+  <div class="auth-wrap">
+    <a href="index.html" class="auth-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      На главную
+    </a>
+
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L7 14h4l-1 8 7-11h-4l1-9z" fill="white"/></svg>
+        </div>
+        <h1>Вход в аккаунт</h1>
+        <p>Добро пожаловать обратно в VoltVisuals</p>
+      </div>
+
+      <form class="auth-form" id="loginForm">
+        <div class="form-group">
+          <label for="login">Email или ник</label>
+          <input type="text" id="login" name="login" placeholder="player@volt.ru" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="password">Пароль</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <p class="form-error hidden" id="loginError"></p>
+        <button type="submit" class="btn btn--primary btn--lg btn--full">Войти</button>
+      </form>
+
+      <p class="auth-switch">
+        Нет аккаунта? <a href="register.html">Зарегистрироваться</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script>
+    (async () => {
+      await Auth.init();
+      if (Auth.getCurrentUser()) {
+        window.location.href = Auth.loginRedirect(Auth.getCurrentUser());
+      }
+
+      document.getElementById('loginForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const err = document.getElementById('loginError');
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        const result = await Auth.login({
+          login: document.getElementById('login').value,
+          password: document.getElementById('password').value,
+        });
+        btn.disabled = false;
+        if (!result.ok) {
+          err.textContent = result.error;
+          err.classList.remove('hidden');
+          return;
+        }
+        window.location.href = Auth.loginRedirect(result.user);
+      });
+    })();
+  </script>
+</body>
+</html>
