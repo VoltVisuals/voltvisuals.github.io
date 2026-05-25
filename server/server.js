@@ -22,9 +22,9 @@ const SESSION_DAYS = 30;
 const COOKIE_NAME = 'volt_session';
 
 const PLANS = {
-  '30d': { days: 30, price: 150, label: '30 дней' },
-  '6m': { days: 180, price: 250, label: '6 месяцев' },
-  lifetime: { days: null, price: 399, label: 'Навсегда' },
+  '30d': { days: 30, price: 99, label: '30 дней' },
+  '6m': { days: 180, price: 139, label: '6 месяцев' },
+  lifetime: { days: null, price: 299, label: 'Навсегда' },
 };
 
 app.use(express.json());
