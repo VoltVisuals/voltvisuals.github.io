@@ -59,150 +59,81 @@
   </header>
 
   <main class="page-main page-main--shop">
-    <div class="container container--shop">
+    <div class="container container--shop-wide">
 
-      <div class="promo-banner shop-promo">
-        <span class="promo-icon">✦</span>
-        <div>
-          <strong>СКИДКА В ЧЕСТЬ ОБНОВЛЕНИЯ v1.6.1</strong>
-          <span>34 модуля · 5 тем · новый интерфейс — специальные цены на все тарифы</span>
+      <div class="shop-tabs shop-tabs--center" role="tablist">
+        <button type="button" class="shop-tab shop-tab--active" data-tab="products" role="tab">Продукты</button>
+        <button type="button" class="shop-tab" data-tab="activate" role="tab">Активация кода</button>
+      </div>
+
+      <div class="shop-panel" id="panelProducts" role="tabpanel">
+        <h1 class="services-title">Наши услуги</h1>
+
+        <div class="product-grid" id="productGrid">
+          <article class="product-card" data-plan="30d">
+            <div class="product-card-cover product-card-cover--30d">
+              <span class="product-card-cover-text">30 ДНЕЙ</span>
+            </div>
+            <div class="product-card-body">
+              <h3 class="product-card-name">Клиент на 30 дней</h3>
+              <div class="product-card-pricing">
+                <span class="product-card-old">150 ₽</span>
+                <span class="product-card-price">99 ₽</span>
+                <span class="product-card-discount">Скидка 34%</span>
+              </div>
+              <button type="button" class="product-card-btn pay-btn" data-plan="30d">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                Оплатить
+              </button>
+            </div>
+          </article>
+
+          <article class="product-card" data-plan="6m">
+            <div class="product-card-cover product-card-cover--6m">
+              <span class="product-card-cover-text">6 МЕСЯЦЕВ</span>
+            </div>
+            <div class="product-card-body">
+              <h3 class="product-card-name">Клиент на 6 месяцев</h3>
+              <div class="product-card-pricing">
+                <span class="product-card-old">250 ₽</span>
+                <span class="product-card-price">139 ₽</span>
+                <span class="product-card-discount">Скидка 44%</span>
+              </div>
+              <button type="button" class="product-card-btn pay-btn" data-plan="6m">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                Оплатить
+              </button>
+            </div>
+          </article>
+
+          <article class="product-card" data-plan="lifetime">
+            <div class="product-card-cover product-card-cover--life">
+              <span class="product-card-cover-text">НАВСЕГДА</span>
+            </div>
+            <div class="product-card-body">
+              <h3 class="product-card-name">Клиент навсегда</h3>
+              <div class="product-card-pricing">
+                <span class="product-card-old">399 ₽</span>
+                <span class="product-card-price">299 ₽</span>
+                <span class="product-card-discount">Скидка 25%</span>
+              </div>
+              <button type="button" class="product-card-btn pay-btn" data-plan="lifetime">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                Оплатить
+              </button>
+            </div>
+          </article>
         </div>
       </div>
 
-      <div class="shop-head">
-        <h1 class="shop-title">Покупки</h1>
-        <p class="shop-subtitle">Выберите тариф, оплатите и активируйте код в личном кабинете</p>
-      </div>
-
-      <div class="shop-tabs" role="tablist">
-        <button type="button" class="shop-tab shop-tab--active" data-tab="products" role="tab" aria-selected="true">Продукты</button>
-        <button type="button" class="shop-tab" data-tab="activate" role="tab" aria-selected="false">Активация кода</button>
-      </div>
-
-      <!-- ===== TAB: Products ===== -->
-      <div class="shop-panel" id="panelProducts" role="tabpanel">
-
-        <article class="shop-product">
-          <div class="shop-product-media">
-            <div class="shop-product-logo">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L7 14h4l-1 8 7-11h-4l1-9z" fill="white"/></svg>
-            </div>
-            <div class="shop-product-meta">
-              <span class="shop-chip">Fabric 1.20.1</span>
-              <span class="shop-chip">v1.6.1</span>
-              <span class="shop-chip shop-chip--accent">34 модуля</span>
-            </div>
-            <ul class="shop-product-highlights">
-              <li>Click GUI & Interface HUD</li>
-              <li>5 тем оформления</li>
-              <li>HWID-привязка 1 ПК</li>
-              <li>Поддержка в канале VoltVisual</li>
-            </ul>
-          </div>
-
-          <div class="shop-product-panel">
-            <div class="shop-product-head">
-              <h2>VoltVisuals</h2>
-              <p>Premium Fabric client для комфортной игры на серверах</p>
-            </div>
-
-            <p class="shop-plans-label">Срок подписки</p>
-            <div class="shop-plans" id="shopPlans">
-              <button type="button" class="shop-plan shop-plan--active" data-plan="30d">
-                <span class="shop-plan-name">30 дней</span>
-                <span class="shop-plan-price">99 ₽</span>
-              </button>
-              <button type="button" class="shop-plan" data-plan="6m">
-                <span class="shop-plan-badge">Выгодно</span>
-                <span class="shop-plan-name">6 месяцев</span>
-                <span class="shop-plan-price">139 ₽</span>
-              </button>
-              <button type="button" class="shop-plan" data-plan="lifetime">
-                <span class="shop-plan-badge shop-plan-badge--gold">Навсегда</span>
-                <span class="shop-plan-name">Lifetime</span>
-                <span class="shop-plan-price">299 ₽</span>
-              </button>
-            </div>
-
-            <div class="shop-summary">
-              <div class="shop-summary-price">
-                <span class="shop-summary-value" id="shopPrice">99</span>
-                <span class="shop-summary-currency">₽</span>
-              </div>
-              <div class="shop-summary-info">
-                <strong id="shopPlanLabel">30 дней</strong>
-                <span id="shopPlanDesc">Месяц доступа ко всем модулям</span>
-              </div>
-            </div>
-
-            <ul class="shop-plan-features" id="shopFeatures"></ul>
-
-            <button type="button" class="btn btn--primary btn--lg btn--full" id="shopBuyBtn">Купить</button>
-          </div>
-        </article>
-
-        <section class="shop-checkout" id="shopCheckout">
-          <div class="shop-checkout-head">
-            <span class="shop-checkout-step">Шаг 2</span>
-            <h3>Оплата</h3>
-            <p>Выбранный тариф: <strong id="checkoutPlanName">30 дней</strong> — <strong id="checkoutPlanPrice">99 ₽</strong></p>
-          </div>
-
-          <div class="shop-pay-grid">
-            <a href="https://t.me/Mizantrophya" target="_blank" rel="noopener" class="shop-pay-card">
-              <span class="pay-method-icon pay-method-icon--tg">
-                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-              </span>
-              <span class="shop-pay-body">
-                <strong>Telegram Stars</strong>
-                <span>Напишите @Mizantrophya — укажите тариф и ник</span>
-              </span>
-              <span class="shop-pay-arrow">→</span>
-            </a>
-            <a href="https://funpay.com/" target="_blank" rel="noopener" class="shop-pay-card">
-              <span class="pay-method-icon pay-method-icon--fp">
-                <svg viewBox="0 0 24 24" width="26" height="26"><rect width="24" height="24" rx="6" fill="#FF6B00"/><text x="12" y="16.5" text-anchor="middle" fill="white" font-size="11" font-weight="700" font-family="Inter,sans-serif">FP</text></svg>
-              </span>
-              <span class="shop-pay-body">
-                <strong>FunPay</strong>
-                <span>Оплата на funpay.com — код придёт после покупки</span>
-              </span>
-              <span class="shop-pay-arrow">→</span>
-            </a>
-          </div>
-
-          <div class="shop-steps">
-            <div class="shop-step">
-              <span class="shop-step-num">1</span>
-              <span>Выберите тариф и нажмите «Купить»</span>
-            </div>
-            <div class="shop-step">
-              <span class="shop-step-num">2</span>
-              <span>Оплатите через Telegram или FunPay</span>
-            </div>
-            <div class="shop-step">
-              <span class="shop-step-num">3</span>
-              <span>Активируйте код во вкладке «Активация кода»</span>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <!-- ===== TAB: Activation ===== -->
       <div class="shop-panel hidden" id="panelActivate" role="tabpanel">
+        <h1 class="services-title">Активация кода</h1>
         <div class="shop-activate-card">
-          <div class="shop-activate-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 7h2a5 5 0 0 1 0 10h-2M9 17H7a5 5 0 0 1 0-10h2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          </div>
-          <h2>Активация кода</h2>
           <p class="shop-activate-desc">Введите код, полученный после оплаты. Подписка привяжется к вашему аккаунту.</p>
-
           <label class="shop-code-label" for="activationCode">Код активации</label>
           <input type="text" class="pay-code-input shop-code-input" id="activationCode" placeholder="VV-30D-XXXXXXXXXXXX-XXXXXXXX" autocomplete="off" spellcheck="false">
           <p class="shop-code-hint">Код проверяется сервером — подделать его нельзя.</p>
-
-          <button type="button" class="btn btn--primary btn--lg btn--full" id="redeemCodeBtn">Активировать</button>
-
+          <button type="button" class="product-card-btn product-card-btn--solo" id="redeemCodeBtn">Активировать</button>
           <p class="shop-activate-foot">Нет аккаунта? <a href="register.html">Зарегистрируйтесь</a> перед активацией.</p>
         </div>
       </div>
@@ -216,6 +147,43 @@
     </div>
   </footer>
 
+  <div class="modal hidden" id="payModal">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-card modal-card--pay modal-card--left">
+      <button class="modal-close" id="modalClose" aria-label="Закрыть">&times;</button>
+      <h2 id="modalTitle">Оплата</h2>
+      <p class="modal-desc" id="modalDesc">—</p>
+      <div class="modal-price" id="modalPrice">—</div>
+
+      <p class="pay-step-label">1. Способ оплаты</p>
+      <div class="pay-methods">
+        <a href="https://t.me/Mizantrophya" target="_blank" rel="noopener" class="pay-method">
+          <span class="pay-method-icon pay-method-icon--tg">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+          </span>
+          <span class="pay-method-body">
+            <strong>Telegram Stars</strong>
+            <span>Напишите @Mizantrophya — укажите тариф и ник</span>
+          </span>
+        </a>
+        <a href="https://funpay.com/" target="_blank" rel="noopener" class="pay-method">
+          <span class="pay-method-icon pay-method-icon--fp">
+            <svg viewBox="0 0 24 24" width="28" height="28"><rect width="24" height="24" rx="6" fill="#FF6B00"/><text x="12" y="16.5" text-anchor="middle" fill="white" font-size="11" font-weight="700" font-family="Inter,sans-serif">FP</text></svg>
+          </span>
+          <span class="pay-method-body">
+            <strong>FunPay</strong>
+            <span>Оплата на funpay.com</span>
+          </span>
+        </a>
+      </div>
+
+      <p class="pay-step-label">2. Код активации</p>
+      <input type="text" class="pay-code-input" id="modalActivationCode" placeholder="VV-30D-XXXXXXXXXXXX-XXXXXXXX" autocomplete="off" spellcheck="false">
+      <p class="modal-hint">После оплаты введите код здесь или во вкладке «Активация кода».</p>
+      <button type="button" class="product-card-btn product-card-btn--solo" id="redeemModalBtn">Активировать код</button>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/cookies.js"></script>
@@ -223,101 +191,83 @@
   <script>
     CookieConsent.init();
 
-    const PLAN_FEATURES = {
-      '30d': [
-        'Все 34 модуля клиента',
-        'Click GUI и Interface HUD',
-        '5 тем оформления',
-        'Обновления на период подписки',
-      ],
-      '6m': [
-        'Всё из тарифа 30 дней',
-        'Экономия ~76 ₽/мес',
-        'Приоритет в поддержке',
-        'Ранний доступ к обновлениям',
-      ],
-      lifetime: [
-        'Бессрочный доступ к клиенту',
-        'Все будущие обновления',
-        'HWID-привязка 1 ПК',
-        'VIP в канале VoltVisual',
-      ],
-    };
-
-    let selectedPlan = '30d';
-
-    function renderFeatures(planId) {
-      const list = document.getElementById('shopFeatures');
-      list.innerHTML = (PLAN_FEATURES[planId] || []).map(f => `<li>${f}</li>`).join('');
-    }
-
-    function selectPlan(planId) {
-      selectedPlan = planId;
-      const plan = Auth.PLANS[planId];
-      if (!plan) return;
-
-      document.querySelectorAll('.shop-plan').forEach(btn => {
-        btn.classList.toggle('shop-plan--active', btn.dataset.plan === planId);
-      });
-
-      document.getElementById('shopPrice').textContent = plan.price;
-      document.getElementById('shopPlanLabel').textContent = plan.label;
-      document.getElementById('shopPlanDesc').textContent = plan.desc;
-      document.getElementById('checkoutPlanName').textContent = plan.label;
-      document.getElementById('checkoutPlanPrice').textContent = plan.price + ' ₽';
-      renderFeatures(planId);
-    }
+    let selectedPlan = null;
 
     function switchTab(tab) {
       document.querySelectorAll('.shop-tab').forEach(t => {
-        const active = t.dataset.tab === tab;
-        t.classList.toggle('shop-tab--active', active);
-        t.setAttribute('aria-selected', active ? 'true' : 'false');
+        t.classList.toggle('shop-tab--active', t.dataset.tab === tab);
       });
       document.getElementById('panelProducts').classList.toggle('hidden', tab !== 'products');
       document.getElementById('panelActivate').classList.toggle('hidden', tab !== 'activate');
     }
 
+    function openPayModal(planId) {
+      const plan = Auth.PLANS[planId];
+      if (!plan) return;
+      selectedPlan = planId;
+      document.getElementById('modalTitle').textContent = plan.label;
+      document.getElementById('modalDesc').textContent = plan.desc;
+      document.getElementById('modalPrice').textContent = plan.price + ' ₽';
+      document.getElementById('modalActivationCode').value = '';
+      document.getElementById('payModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('payModal').classList.add('hidden');
+      selectedPlan = null;
+    }
+
+    async function redeemCode(code) {
+      if (!code) {
+        Auth.showToast('Введите код активации', 'error');
+        return;
+      }
+      if (!Auth.getCurrentUser()) {
+        window.location.href = 'login.html?redirect=buy.html';
+        return;
+      }
+      const result = await Auth.redeemCode(code, null);
+      if (!result.ok) {
+        Auth.showToast(result.error, 'error');
+        return;
+      }
+      closeModal();
+      Auth.showToast('Подписка активирована! Переходим в профиль…');
+      setTimeout(() => { window.location.href = 'profile.html'; }, 1500);
+    }
+
     (async () => {
       await Auth.init();
-      selectPlan('6m');
-
-      document.querySelectorAll('.shop-plan').forEach(btn => {
-        btn.addEventListener('click', () => selectPlan(btn.dataset.plan));
-      });
 
       document.querySelectorAll('.shop-tab').forEach(tab => {
         tab.addEventListener('click', () => switchTab(tab.dataset.tab));
       });
 
-      document.getElementById('shopBuyBtn').addEventListener('click', () => {
-        if (!Auth.getCurrentUser()) {
-          window.location.href = 'login.html?redirect=buy.html';
-          return;
-        }
-        document.getElementById('shopCheckout').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.querySelectorAll('.pay-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!Auth.getCurrentUser()) {
+            window.location.href = 'login.html?redirect=buy.html';
+            return;
+          }
+          openPayModal(btn.dataset.plan);
+        });
+      });
+
+      document.getElementById('modalClose').addEventListener('click', closeModal);
+      document.getElementById('modalBackdrop').addEventListener('click', closeModal);
+
+      document.getElementById('redeemModalBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('redeemModalBtn');
+        btn.disabled = true;
+        await redeemCode(document.getElementById('modalActivationCode').value.trim());
+        btn.disabled = false;
       });
 
       document.getElementById('redeemCodeBtn').addEventListener('click', async () => {
-        const code = document.getElementById('activationCode').value.trim();
-        if (!code) {
-          Auth.showToast('Введите код активации', 'error');
-          return;
-        }
-        if (!Auth.getCurrentUser()) {
-          window.location.href = 'login.html?redirect=buy.html#activate';
-          return;
-        }
         const btn = document.getElementById('redeemCodeBtn');
         btn.disabled = true;
-        const result = await Auth.redeemCode(code, null);
+        await redeemCode(document.getElementById('activationCode').value.trim());
         btn.disabled = false;
-        if (!result.ok) {
-          Auth.showToast(result.error, 'error');
-          return;
-        }
-        Auth.showToast('Подписка активирована! Переходим в профиль…');
-        setTimeout(() => { window.location.href = 'profile.html'; }, 1500);
       });
 
       const profileLink = document.getElementById('profileNavLink');
@@ -325,9 +275,7 @@
         profileLink.href = 'login.html?redirect=profile.html';
       }
 
-      if (location.hash === '#activate') {
-        switchTab('activate');
-      }
+      if (location.hash === '#activate') switchTab('activate');
     })();
   </script>
 </body>
