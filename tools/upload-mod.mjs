@@ -62,11 +62,17 @@ if (!jarPath) {
 const bucketRes = await fetch(`${url}/storage/v1/bucket`, {
   method: 'POST',
   headers: storageHeaders('application/json'),
-  body: JSON.stringify({ id: 'mod-releases', name: 'mod-releases', public: false }),
+  body: JSON.stringify({ id: 'mod-releases', name: 'mod-releases', public: true }),
 });
 if (!bucketRes.ok && bucketRes.status !== 409) {
   console.warn('Bucket warn:', await bucketRes.text());
 }
+
+await fetch(`${url}/storage/v1/bucket/mod-releases`, {
+  method: 'PUT',
+  headers: storageHeaders('application/json'),
+  body: JSON.stringify({ public: true }),
+}).catch(() => {});
 
 const body = fs.readFileSync(jarPath);
 const upload = await fetch(`${url}/storage/v1/object/mod-releases/${jarName}`, {

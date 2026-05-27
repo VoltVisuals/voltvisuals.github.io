@@ -29,7 +29,7 @@ const headers = {
 const res = await fetch(`${url}/storage/v1/bucket`, {
   method: 'POST',
   headers,
-  body: JSON.stringify({ id: 'mod-releases', name: 'mod-releases', public: false }),
+  body: JSON.stringify({ id: 'mod-releases', name: 'mod-releases', public: true }),
 });
 if (res.ok || res.status === 409) {
   console.log('Bucket mod-releases OK');

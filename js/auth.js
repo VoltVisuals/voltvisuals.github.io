@@ -333,19 +333,78 @@ const Auth = {
       return { ok: false, error: 'Нужна активная подписка' };
     }
 
-    const { data, error } = await sb.storage.from('mod-releases').download('voltvisuals-1.6.1.jar');
-    if (error) {
-      return { ok: false, error: error.message || 'Файл не найден в Storage bucket mod-releases' };
+    const jarName = 'voltvisuals-1.6.1.jar';
+    const errors = [];
+
+    const api = await this.callApi('/mod/download', { method: 'GET' });
+    if (api.ok && api.url) {
+      return this.triggerFileDownload(api.url, api.filename || jarName);
+    }
+    if (api.error) errors.push(api.error);
+
+    const { data: signed, error: signError } = await sb.storage
+      .from('mod-releases')
+      .createSignedUrl(jarName, 600);
+    if (!signError && signed?.signedUrl) {
+      return this.triggerFileDownload(signed.signedUrl, jarName);
+    }
+    if (signError?.message) errors.push(signError.message);
+
+    const publicUrl = sb.storage.from('mod-releases').getPublicUrl(jarName).data.publicUrl;
+    if (publicUrl) {
+      try {
+        const res = await fetch(publicUrl, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        return this.triggerBlobDownload(blob, jarName);
+      } catch (e) {
+        errors.push(e.message || 'Public URL недоступен');
+      }
     }
 
-    const url = URL.createObjectURL(data);
+    const { data, error } = await sb.storage.from('mod-releases').download(jarName);
+    if (!error && data) {
+      return this.triggerBlobDownload(data, jarName);
+    }
+    if (error?.message) errors.push(error.message);
+
+    const detail = errors.filter(Boolean).join(' · ');
+    return {
+      ok: false,
+      error: detail
+        ? `Не удалось скачать мод: ${detail}`
+        : 'Не удалось скачать мод. Попробуйте позже или напишите в поддержку.',
+    };
+  },
+
+  async triggerFileDownload(url, filename) {
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      return this.triggerBlobDownload(blob, filename);
+    } catch {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      return { ok: true };
+    }
+  },
+
+  triggerBlobDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'voltvisuals-1.6.1.jar';
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
     return { ok: true };
   },
 
