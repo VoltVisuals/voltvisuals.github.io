@@ -3652,6 +3652,32 @@ body.menu-open { overflow: hidden; }
   flex-shrink: 0;
 }
 
+.pay-method--featured {
+  border-color: rgba(255, 221, 0, 0.45);
+  background: linear-gradient(135deg, rgba(0, 91, 187, 0.08), rgba(255, 221, 0, 0.06));
+}
+
+.pay-method--featured:hover {
+  border-color: rgba(255, 221, 0, 0.7);
+  background: linear-gradient(135deg, rgba(0, 91, 187, 0.12), rgba(255, 221, 0, 0.1));
+}
+
+.pay-method--support {
+  border-color: rgba(129, 135, 255, 0.35);
+}
+
+.pay-method-icon--ua {
+  background: linear-gradient(135deg, rgba(0, 91, 187, 0.2), rgba(255, 221, 0, 0.2));
+  font-size: 22px;
+  line-height: 1;
+}
+
+.pay-method-icon--support {
+  background: rgba(129, 135, 255, 0.15);
+  font-size: 22px;
+  line-height: 1;
+}
+
 .pay-method-icon--tg {
   background: rgba(42, 171, 238, 0.15);
   color: #2aabee;
