@@ -2,6 +2,9 @@ const Auth = {
   _user: null,
   _initPromise: null,
   _supabase: null,
+  _authReady: false,
+
+  MOD_JAR_NAMES: ['voltvisuals-1.6.3.jar', 'voltvisuals-1.6.2.jar'],
 
   PLANS: {
     '30d': { days: 30, priceUah: 50, price: 99, label: '30 дней', desc: 'Месяц доступа ко всем модулям', botUrl: 'https://t.me/VoltVisuals_bot?start=buy', funpayUrl: 'https://funpay.com/lots/offer?id=69706646' },
@@ -41,6 +44,13 @@ const Auth = {
       this._supabase = window.supabase.createClient(
         window.VV_SUPABASE_URL,
         window.VV_SUPABASE_ANON_KEY,
+        {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+          },
+        },
       );
     }
     return this._supabase;
@@ -124,35 +134,83 @@ const Auth = {
   },
 
   async init() {
-    if (!this._initPromise) this._initPromise = this.refreshUser();
+    if (!this._initPromise) this._initPromise = this._bootstrapSession();
     return this._initPromise;
+  },
+
+  async _bootstrapSession() {
+    const sb = this.getSupabase();
+    if (!sb) {
+      this._user = null;
+      this._authReady = true;
+      return null;
+    }
+
+    await new Promise((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+      const { data: { subscription } } = sb.auth.onAuthStateChange((event) => {
+        if (event === 'INITIAL_SESSION') finish();
+      });
+      setTimeout(() => {
+        subscription.unsubscribe();
+        finish();
+      }, 1200);
+    });
+
+    await this.refreshUser();
+    this._authReady = true;
+    return this._user;
   },
 
   async refreshUser() {
     const sb = this.getSupabase();
     if (!sb) { this._user = null; return null; }
 
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) { this._user = null; return null; }
+    let session = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { data: { session: current } } = await sb.auth.getSession();
+      session = current;
+      if (session) break;
+      await new Promise(r => setTimeout(r, 100));
+    }
 
-    const { data: profile, error } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-    if (error || !profile) {
-      const fallback = this.mapProfile(null, session.user.email, session.user);
-      if (fallback && !fallback.banned) {
-        this._user = fallback;
+    if (!session) {
+      const { data: { user } } = await sb.auth.getUser();
+      if (user) {
+        this._user = this.mapProfile(null, user.email, user);
         return this._user;
       }
       this._user = null;
       return null;
     }
 
-    if (profile.banned) {
+    let profile = null;
+    let profileError = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const result = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+      profile = result.data;
+      profileError = result.error;
+      if (profile || !profileError) break;
+      await new Promise(r => setTimeout(r, 120));
+    }
+
+    if (profile?.banned) {
       await sb.auth.signOut();
       this._user = null;
       return null;
     }
 
-    this._user = this.mapProfile(profile, session.user.email);
+    if (profile) {
+      this._user = this.mapProfile(profile, session.user.email);
+      return this._user;
+    }
+
+    this._user = this.mapProfile(null, session.user.email, session.user);
     return this._user;
   },
 
@@ -197,6 +255,8 @@ const Auth = {
     }
 
     await this.refreshUser();
+    this._authReady = true;
+    if (document.getElementById('header')) this.renderNav();
     return { ok: true, user: this._user };
   },
 
@@ -210,6 +270,8 @@ const Auth = {
 
     await this.refreshUser();
     if (!this._user) return { ok: false, error: 'Аккаунт заблокирован' };
+    this._authReady = true;
+    if (document.getElementById('header')) this.renderNav();
     return { ok: true, user: this._user };
   },
 
@@ -217,6 +279,7 @@ const Auth = {
     const sb = this.getSupabase();
     if (sb) await sb.auth.signOut();
     this._user = null;
+    this._initPromise = null;
     window.location.href = 'index.html';
   },
 
@@ -327,53 +390,62 @@ const Auth = {
   },
 
   async downloadMod() {
+    await this.init();
+    await this.refreshUser();
+
     const sb = this.getSupabase();
     if (!sb) return { ok: false, error: 'Supabase не настроен' };
     if (!this.isSubscriptionActive(this._user)) {
       return { ok: false, error: 'Нужна активная подписка' };
     }
 
-    const jarName = 'voltvisuals-1.6.2.jar';
     const errors = [];
 
-    const publicUrl = sb.storage.from('mod-releases').getPublicUrl(jarName).data.publicUrl;
-    if (publicUrl) {
-      try {
-        const res = await fetch(`${publicUrl}?t=${Date.now()}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const blob = await res.blob();
-        const valid = await this.validateModJarAsync(blob);
-        if (valid.ok) return this.triggerBlobDownload(blob, jarName);
-        errors.push(valid.error);
-      } catch (e) {
-        errors.push(e.message || 'Public URL недоступен');
+    for (const jarName of this.MOD_JAR_NAMES) {
+      const publicUrl = sb.storage.from('mod-releases').getPublicUrl(jarName).data.publicUrl;
+      if (publicUrl) {
+        const anchorResult = this.downloadViaAnchor(`${publicUrl}?t=${Date.now()}`, jarName);
+        if (anchorResult.ok) return anchorResult;
+
+        try {
+          const res = await fetch(`${publicUrl}?t=${Date.now()}`, { cache: 'no-store', mode: 'cors' });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const blob = await res.blob();
+          const valid = await this.validateModJarAsync(blob);
+          if (valid.ok) return this.triggerBlobDownload(blob, jarName);
+          errors.push(`${jarName}: ${valid.error}`);
+        } catch (e) {
+          errors.push(`${jarName}: ${e.message || 'Public URL недоступен'}`);
+        }
       }
-    }
 
-    const { data: signed, error: signError } = await sb.storage
-      .from('mod-releases')
-      .createSignedUrl(jarName, 600);
-    if (!signError && signed?.signedUrl) {
-      const result = await this.triggerFileDownload(signed.signedUrl, jarName);
-      if (result.ok) return result;
-      if (result.error) errors.push(result.error);
-    } else if (signError?.message) {
-      errors.push(signError.message);
-    }
+      const { data: signed, error: signError } = await sb.storage
+        .from('mod-releases')
+        .createSignedUrl(jarName, 600);
+      if (!signError && signed?.signedUrl) {
+        const result = await this.triggerFileDownload(signed.signedUrl, jarName);
+        if (result.ok) return result;
+        if (result.error) errors.push(result.error);
+      } else if (signError?.message) {
+        errors.push(signError.message);
+      }
 
-    const { data, error } = await sb.storage.from('mod-releases').download(jarName);
-    if (!error && data) {
-      const valid = await this.validateModJarAsync(data);
-      if (valid.ok) return this.triggerBlobDownload(data, jarName);
-      errors.push(valid.error);
-    } else if (error?.message) {
-      errors.push(error.message);
+      const { data, error } = await sb.storage.from('mod-releases').download(jarName);
+      if (!error && data) {
+        const valid = await this.validateModJarAsync(data);
+        if (valid.ok) return this.triggerBlobDownload(data, jarName);
+        errors.push(valid.error);
+      } else if (error?.message) {
+        errors.push(error.message);
+      }
     }
 
     const api = await this.callApi('/mod/download', { method: 'GET' });
     if (api.ok && api.url) {
-      const result = await this.triggerFileDownload(api.url, api.filename || jarName);
+      const result = await this.triggerFileDownload(api.url, api.filename || this.MOD_JAR_NAMES[0]);
       if (result.ok) return result;
+      const anchor = this.downloadViaAnchor(api.url, api.filename || this.MOD_JAR_NAMES[0]);
+      if (anchor.ok) return anchor;
       if (result.error) errors.push(result.error);
     } else if (api.error) {
       errors.push(api.error);
@@ -386,6 +458,21 @@ const Auth = {
         ? `Не удалось скачать мод: ${detail}`
         : 'Не удалось скачать мод. Попробуйте позже или напишите в поддержку.',
     };
+  },
+
+  downloadViaAnchor(url, filename) {
+    try {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      return { ok: true, method: 'anchor' };
+    } catch (e) {
+      return { ok: false, error: e.message || 'Anchor download failed' };
+    }
   },
 
   validateModJar(blob) {
@@ -415,22 +502,14 @@ const Auth = {
 
   async triggerFileDownload(url, filename) {
     try {
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(url, { cache: 'no-store', mode: 'cors' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
       const valid = await this.validateModJarAsync(blob);
       if (!valid.ok) return { ok: false, error: valid.error };
       return this.triggerBlobDownload(blob, filename);
     } catch {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      return { ok: true };
+      return this.downloadViaAnchor(url, filename);
     }
   },
 
@@ -464,6 +543,15 @@ const Auth = {
     const userEl = document.getElementById('navUser');
     const mobileGuest = document.getElementById('mobileGuest');
     const mobileUser = document.getElementById('mobileUser');
+
+    if (!this._authReady) {
+      guest?.classList.add('hidden');
+      userEl?.classList.add('hidden');
+      mobileGuest?.classList.add('hidden');
+      mobileUser?.classList.add('hidden');
+      return;
+    }
+
     const current = this.getCurrentUser();
 
     if (current) {
@@ -590,8 +678,27 @@ const Auth = {
     document.body.classList.toggle('menu-open', open);
   },
 
+  bindLogoLinks() {
+    const isHome = () => {
+      const path = window.location.pathname.replace(/\/+$/, '');
+      return !path || path.endsWith('/index.html') || path.endsWith('index.html');
+    };
+
+    document.querySelectorAll('a.logo').forEach(link => {
+      if (link.dataset.vvLogoBound) return;
+      link.dataset.vvLogoBound = '1';
+      link.addEventListener('click', (e) => {
+        if (isHome()) {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    });
+  },
+
   initNav() {
     this.enhanceMobileMenu();
+    this.bindLogoLinks();
     this.renderNav();
 
     document.getElementById('logoutBtn')?.addEventListener('click', e => { e.preventDefault(); this.logout(); });
@@ -635,8 +742,13 @@ const Auth = {
   onAuthStateChange() {
     const sb = this.getSupabase();
     if (!sb) return;
-    sb.auth.onAuthStateChange(() => {
-      this.refreshUser().then(() => { if (document.getElementById('header')) this.renderNav(); });
+    sb.auth.onAuthStateChange((event) => {
+      if (event === 'INITIAL_SESSION') return;
+      if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+        this.refreshUser().then(() => {
+          if (document.getElementById('header')) this.renderNav();
+        });
+      }
     });
   },
 };

@@ -143,7 +143,9 @@ a { color: inherit; text-decoration: none; }
   gap: 10px;
   font-weight: 700;
   font-size: 1.1rem;
-  z-index: 1;
+  position: relative;
+  z-index: 3;
+  flex-shrink: 0;
 }
 
 .logo-mark {

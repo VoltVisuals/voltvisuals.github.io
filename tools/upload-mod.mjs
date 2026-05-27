@@ -31,7 +31,7 @@ const env = {
 
 const secret = env.SUPABASE_SECRET_KEY;
 const url = env.SUPABASE_URL || 'https://njgdqgrugpvaptfzejdv.supabase.co';
-const jarName = env.MOD_JAR_NAME || 'voltvisuals-1.6.2.jar';
+const jarName = env.MOD_JAR_NAME || 'voltvisuals-1.6.3.jar';
 
 function storageHeaders(contentType = 'application/octet-stream') {
   const h = {

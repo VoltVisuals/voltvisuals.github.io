@@ -24,7 +24,7 @@ const DURATIONS: Record<string, { code: string; minutes: number | null; label: s
 
 const CODE_TO_PLAN = Object.fromEntries(Object.entries(DURATIONS).map(([k, v]) => [v.code, k]));
 const DUR_CODE_PATTERN = Object.values(DURATIONS).map((d) => d.code).join('|');
-const MOD_VERSION = '1.6.2';
+const MOD_VERSION = '1.6.3';
 const JAR_NAME = `voltvisuals-${MOD_VERSION}.jar`;
 const MOD_TOKEN_DAYS = 14;
 
