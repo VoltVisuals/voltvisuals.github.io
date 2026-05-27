@@ -2757,6 +2757,38 @@ body.menu-open { overflow: hidden; }
   line-height: 1.5;
 }
 
+.profile-install-steps {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: rgba(129, 135, 255, 0.06);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+
+.profile-install-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+
+.profile-install-steps ol {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.78rem;
+  color: var(--text-mute);
+  line-height: 1.6;
+}
+
+.profile-install-steps code {
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+
+.profile-install-steps a {
+  color: var(--accent);
+}
+
 /* Download file card */
 .download-file-card {
   display: flex;

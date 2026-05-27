@@ -333,40 +333,51 @@ const Auth = {
       return { ok: false, error: 'Нужна активная подписка' };
     }
 
-    const jarName = 'voltvisuals-1.6.1.jar';
+    const jarName = 'voltvisuals-1.6.2.jar';
     const errors = [];
-
-    const api = await this.callApi('/mod/download', { method: 'GET' });
-    if (api.ok && api.url) {
-      return this.triggerFileDownload(api.url, api.filename || jarName);
-    }
-    if (api.error) errors.push(api.error);
-
-    const { data: signed, error: signError } = await sb.storage
-      .from('mod-releases')
-      .createSignedUrl(jarName, 600);
-    if (!signError && signed?.signedUrl) {
-      return this.triggerFileDownload(signed.signedUrl, jarName);
-    }
-    if (signError?.message) errors.push(signError.message);
 
     const publicUrl = sb.storage.from('mod-releases').getPublicUrl(jarName).data.publicUrl;
     if (publicUrl) {
       try {
-        const res = await fetch(publicUrl, { cache: 'no-store' });
+        const res = await fetch(`${publicUrl}?t=${Date.now()}`, { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const blob = await res.blob();
-        return this.triggerBlobDownload(blob, jarName);
+        const valid = await this.validateModJarAsync(blob);
+        if (valid.ok) return this.triggerBlobDownload(blob, jarName);
+        errors.push(valid.error);
       } catch (e) {
         errors.push(e.message || 'Public URL недоступен');
       }
     }
 
+    const { data: signed, error: signError } = await sb.storage
+      .from('mod-releases')
+      .createSignedUrl(jarName, 600);
+    if (!signError && signed?.signedUrl) {
+      const result = await this.triggerFileDownload(signed.signedUrl, jarName);
+      if (result.ok) return result;
+      if (result.error) errors.push(result.error);
+    } else if (signError?.message) {
+      errors.push(signError.message);
+    }
+
     const { data, error } = await sb.storage.from('mod-releases').download(jarName);
     if (!error && data) {
-      return this.triggerBlobDownload(data, jarName);
+      const valid = await this.validateModJarAsync(data);
+      if (valid.ok) return this.triggerBlobDownload(data, jarName);
+      errors.push(valid.error);
+    } else if (error?.message) {
+      errors.push(error.message);
     }
-    if (error?.message) errors.push(error.message);
+
+    const api = await this.callApi('/mod/download', { method: 'GET' });
+    if (api.ok && api.url) {
+      const result = await this.triggerFileDownload(api.url, api.filename || jarName);
+      if (result.ok) return result;
+      if (result.error) errors.push(result.error);
+    } else if (api.error) {
+      errors.push(api.error);
+    }
 
     const detail = errors.filter(Boolean).join(' · ');
     return {
@@ -377,11 +388,38 @@ const Auth = {
     };
   },
 
+  validateModJar(blob) {
+    const minSize = 10 * 1024 * 1024;
+    if (!blob || blob.size < minSize) {
+      return {
+        ok: false,
+        error: `Файл слишком маленький (${blob?.size || 0} байт). Скачайте заново с сайта.`,
+      };
+    }
+    return { ok: true };
+  },
+
+  async validateModJarAsync(blob) {
+    const base = this.validateModJar(blob);
+    if (!base.ok) return base;
+    try {
+      const head = new Uint8Array(await blob.slice(0, 2).arrayBuffer());
+      if (head[0] !== 0x50 || head[1] !== 0x4b) {
+        return { ok: false, error: 'Скачан не JAR-файл. Проверьте интернет и попробуйте снова.' };
+      }
+    } catch {
+      return { ok: false, error: 'Не удалось проверить файл' };
+    }
+    return { ok: true };
+  },
+
   async triggerFileDownload(url, filename) {
     try {
       const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
+      const valid = await this.validateModJarAsync(blob);
+      if (!valid.ok) return { ok: false, error: valid.error };
       return this.triggerBlobDownload(blob, filename);
     } catch {
       const a = document.createElement('a');
